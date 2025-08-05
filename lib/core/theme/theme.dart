@@ -7,3 +7,4 @@ ThemeData lightTheme = ThemeData(
 
 const textfieldColor = Color(0x2B97E3CE);
 const primaryColor = Color(0xFF4BC7A4);
+const secondaryColor = Color(0xFF256150);

@@ -5,8 +5,8 @@ import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dar
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_container.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class OtpScreen extends StatelessWidget {
+  const OtpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,41 +28,28 @@ class LoginScreen extends StatelessWidget {
               child: CommonContainer(
                 title: "Driver Login",
                 width: 354.w,
-                height: 425.h,
+                height: 360.h,
               ),
             ),
           ),
           Positioned(
-            top: 265.h,
+            top: 270.h,
             left: 35.w,
             right: 35.w,
             child: CommonTextfield(
-              hintText: 'Enter OTP',
-              labelText: 'Enter OTP',
+              hintText: 'Enter phone number',
+              labelText: 'Phone Number',
             ),
           ),
           Positioned(
-            top: 365.h,
+            top: 370.h,
             left: 35.w,
             right: 35.w,
             child: CommonButton(
-              buttonValue: 'Verify & Login',
+              buttonValue: 'OTP',
               onTap: () {
-                Navigator.pushNamed(context, '/verification');
+                Navigator.pushNamed(context, '/login');
               },
-            ),
-          ),
-          Positioned(
-            bottom: 150.h,
-            left: 38.w,
-            right: 20.w,
-            child: Text(
-              "By logging in, you agree to our Terms of Service ",
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 12.sp,
-                color: Colors.grey,
-              ),
             ),
           ),
         ],
