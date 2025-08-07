@@ -22,25 +22,27 @@ class CommonButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        width: width ?? double.infinity,
-        height: height ?? 44.sp,
-        decoration: BoxDecoration(
-          color: backgroundColor ?? primaryColor,
-          borderRadius: BorderRadius.circular(10.r),
-        ),
-        child: Center(
-          child: Text(
-            buttonValue,
-            style:
-                textStyle ??
-                TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16.sp,
-                  color: Colors.white,
-                ),
+    return Material(
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          width: width ?? double.infinity,
+          height: height ?? 44.sp,
+          decoration: BoxDecoration(
+            color: backgroundColor ?? primaryColor,
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Center(
+            child: Text(
+              buttonValue,
+              style:
+                  textStyle ??
+                  TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16.sp,
+                    color: Colors.white,
+                  ),
+            ),
           ),
         ),
       ),
