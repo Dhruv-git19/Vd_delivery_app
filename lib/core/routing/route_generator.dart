@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:vedasip_delivery_app/feature/login_screen.dart/login_screen.dart';
-import 'package:vedasip_delivery_app/feature/login_screen.dart/otp_screen.dart';
+import 'package:vedasip_delivery_app/feature/home_screen/home_screen.dart';
+import 'package:vedasip_delivery_app/feature/login_screen/login_screen.dart';
+import 'package:vedasip_delivery_app/feature/login_screen/otp_screen.dart';
 import 'package:vedasip_delivery_app/feature/verification_screen/verification_screen.dart';
 
 class RouteGenerator {
@@ -12,6 +13,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case '/verification':
         return MaterialPageRoute(builder: (_) => const VerificationScreen());
+      case '/home':
+        return MaterialPageRoute(builder: (_) => const HomeScreen());
       default:
         return MaterialPageRoute(
           builder: (_) =>
