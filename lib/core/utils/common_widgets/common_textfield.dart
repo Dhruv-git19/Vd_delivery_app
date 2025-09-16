@@ -10,16 +10,24 @@ class CommonTextfield extends StatelessWidget {
   final String? errorText;
   final double? height;
   final double? width;
+  final Color? fillColor;
+  final Color? borderColor;
+  final Icon? icon;
+  final double? radius;
 
   const CommonTextfield({
     super.key,
     required this.hintText,
-    required this.labelText,
+    this.labelText,
     this.textEditingController,
     this.keyboardType,
     this.errorText,
     this.height,
     this.width,
+    this.fillColor,
+    this.borderColor,
+    this.icon,
+    this.radius,
   });
 
   @override
@@ -43,19 +51,44 @@ class CommonTextfield extends StatelessWidget {
             keyboardType: keyboardType ?? TextInputType.number,
             style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400),
             decoration: InputDecoration(
+              hint: hintText != null
+                  ? Row(
+                      children: [
+                        Icon(
+                          Icons.search,
+                          color: AllColors.primaryColor,
+                          size: 20.sp,
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          hintText!,
+                          style: TextStyle(
+                            color: const Color.fromARGB(255, 97, 95, 95),
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                      ],
+                    )
+                  : null,
               filled: true,
-              fillColor: textfieldColor,
+              fillColor: fillColor ?? textfieldColor,
               hintStyle: TextStyle(
                 color: const Color.fromARGB(255, 97, 95, 95),
                 fontSize: 14.sp,
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6.r),
-                borderSide: BorderSide(color: primaryColor, width: 1.w),
+                borderRadius: BorderRadius.circular(radius ?? 6.r),
+                borderSide: BorderSide(
+                  color: borderColor ?? primaryColor,
+                  width: 1.w,
+                ),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6.r),
-                borderSide: BorderSide(color: primaryColor, width: 1.w),
+                borderRadius: BorderRadius.circular(radius ?? 6.r),
+                borderSide: BorderSide(
+                  color: borderColor ?? primaryColor,
+                  width: 1.w,
+                ),
               ),
               errorText: errorText,
               errorStyle: TextStyle(color: Colors.red, fontSize: 12.sp),

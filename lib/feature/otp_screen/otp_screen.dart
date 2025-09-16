@@ -3,12 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
-import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_container.dart';
-import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class OtpScreen extends StatelessWidget {
+  const OtpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +26,12 @@ class LoginScreen extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 120.h),
             child: Center(
               child: CommonContainer(
-                title: 'Driver Login',
-                hintText: 'Enter Phone Number',
-                labelText: 'Enter OTP',
-                buttonValue: 'Verify & Login',
-
+                title: 'Driver',
+                hintText: 'Enter Otp',
+                labelText: 'Phone Number',
+                buttonValue: 'Send OTP',
                 onTap: () {
-                  GoRouter.of(context).pushNamed(AppRoutes.verificationscreen);
+                  GoRouter.of(context).pushNamed(AppRoutes.loginscreen);
                 },
               ),
             ),

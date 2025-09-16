@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
 
-class HomeScreenContainer extends StatelessWidget {
+class CommonDeliveryContainer extends StatelessWidget {
   final String name;
   final String location;
   final String time;
@@ -12,7 +12,7 @@ class HomeScreenContainer extends StatelessWidget {
   final double? width;
   final double? height;
 
-  const HomeScreenContainer({
+  const CommonDeliveryContainer({
     super.key,
     required this.name,
     required this.location,
