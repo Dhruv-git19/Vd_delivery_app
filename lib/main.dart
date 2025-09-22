@@ -6,11 +6,13 @@ import 'package:vedasip_delivery_app/core/routes/route_generator.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/feature/deliveries_list_screen/deliveries_list_screen.dart';
 import 'package:vedasip_delivery_app/feature/delivery_details_screen/delivery_details_screen.dart';
+import 'package:vedasip_delivery_app/feature/home_screen/xd.dart';
 import 'package:vedasip_delivery_app/feature/home_screen/xd2.dart';
 import 'package:vedasip_delivery_app/feature/confirm_delivery%20screen/confirm_delivery%20screen.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_container.dart';
+import 'package:vedasip_delivery_app/feature/payment_collection_screen/widgets/tab_bar.dart';
 import 'package:vedasip_delivery_app/feature/verification%20screen/widgets/common_verify_button.dart';
 import 'package:vedasip_delivery_app/feature/home_screen/home_screen.dart';
 import 'package:vedasip_delivery_app/feature/live_map_screen/live_map_screen.dart';
@@ -37,7 +39,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(),
         // routerConfig: MyAppRouter().router,
-        home: PaymentCollectionScreen(),
+        home: MyDeliveriesMapScreen(),
       ),
     );
   }

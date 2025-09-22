@@ -47,7 +47,7 @@ class CommonContainer extends StatelessWidget {
             ), //change when using it on actual screen , just for showing that it exist.....
       ),
       child: Padding(
-        padding: const EdgeInsets.all(18.0),
+        padding: EdgeInsets.all(18.r),
         child: Align(
           alignment: Alignment.topCenter,
           child: Column(

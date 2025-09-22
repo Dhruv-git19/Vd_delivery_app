@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:vedasip_delivery_app/core/constants/info_list.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dropdownmenu.dart';
@@ -14,7 +15,7 @@ class DeliveriesListScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: CommonAppbar(title: 'My Deliveries'),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(8.0.r),
         child: Column(
           children: [
             CommonTextfield(
@@ -22,7 +23,7 @@ class DeliveriesListScreen extends StatelessWidget {
               fillColor: Colors.transparent,
               borderColor: Colors.grey.shade300,
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -30,6 +31,7 @@ class DeliveriesListScreen extends StatelessWidget {
                 CommonDropdown(text: 'Time Slot'),
               ],
             ),
+            SizedBox(height: 16.h),
             Expanded(
               child: ListView.builder(
                 itemCount: infoList.length,
@@ -37,15 +39,20 @@ class DeliveriesListScreen extends StatelessWidget {
                   final info = infoList[index];
                   return Column(
                     children: [
-                      CommonDeliveryContainer(
-                        name: info['name'] ?? '',
-                        location: info['location'] ?? '',
-                        time: info['time'] ?? '',
-                        distance: info['distance'] ?? '',
-                        price: info['price'] ?? '',
-                        items: '${info['items'] ?? ''} items',
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CommonDeliveryContainer(
+                          name: info['name'] ?? '',
+                          location: info['location'] ?? '',
+                          time: info['time'] ?? '',
+                          distance: info['distance'] ?? '',
+                          price: info['price'] ?? '',
+                          items: '${info['items'] ?? ''} items',
+
+                          borderColor: Colors.grey.shade300,
+                        ),
                       ),
-                      SizedBox(height: 12.0),
+                      SizedBox(height: 8.h),
                     ],
                   );
                 },

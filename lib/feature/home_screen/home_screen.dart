@@ -57,40 +57,43 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Text(
-            'Todays Delivery',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: verifyheadingcolor,
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          children: [
+            Text(
+              'Todays Delivery',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: verifyheadingcolor,
+              ),
             ),
-          ),
-          SizedBox(height: 10.h),
+            SizedBox(height: 10.h),
 
-          Expanded(
-            child: ListView.builder(
-              itemCount: infoList.length,
-              itemBuilder: (context, index) {
-                final info = infoList[index];
-                return Column(
-                  children: [
-                    CommonDeliveryContainer(
-                      name: info['name'] ?? '',
-                      location: info['location'] ?? '',
-                      time: info['time'] ?? '',
-                      distance: info['distance'] ?? '',
-                      price: info['price'] ?? '',
-                      items: '${info['items'] ?? ''} items',
-                    ),
-                    SizedBox(height: 12.0),
-                  ],
-                );
-              },
+            Expanded(
+              child: ListView.builder(
+                itemCount: infoList.length,
+                itemBuilder: (context, index) {
+                  final info = infoList[index];
+                  return Column(
+                    children: [
+                      CommonDeliveryContainer(
+                        name: info['name'] ?? '',
+                        location: info['location'] ?? '',
+                        time: info['time'] ?? '',
+                        distance: info['distance'] ?? '',
+                        price: info['price'] ?? '',
+                        items: '${info['items'] ?? ''} items',
+                      ),
+                      SizedBox(height: 12.0),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

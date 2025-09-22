@@ -34,7 +34,6 @@ class CommonButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width ?? double.infinity,
-      height: height ?? 48.h,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

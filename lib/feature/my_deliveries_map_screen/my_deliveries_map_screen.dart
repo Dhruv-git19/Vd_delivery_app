@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
+import 'package:vedasip_delivery_app/core/utils/common_widgets/common_map_card.dart';
 import 'package:vedasip_delivery_app/feature/my_deliveries_map_screen/widgets/status_container.dart';
 
 class MyDeliveriesMapScreen extends StatelessWidget {
@@ -74,24 +75,12 @@ class MyDeliveriesMapScreen extends StatelessWidget {
                   SizedBox(height: 10.h),
                   _bottleCount(),
                   SizedBox(height: 20.h),
-                  _mapImage(),
+                  CommonMapCard(),
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _mapImage() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Image.network(
-        "https://picsum.photos/200/300",
-        width: double.infinity,
-        height: 150.h,
-        fit: BoxFit.cover,
       ),
     );
   }

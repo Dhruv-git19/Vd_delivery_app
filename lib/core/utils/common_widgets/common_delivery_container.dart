@@ -11,6 +11,7 @@ class CommonDeliveryContainer extends StatelessWidget {
   final String items;
   final double? width;
   final double? height;
+  final Color? borderColor;
 
   const CommonDeliveryContainer({
     super.key,
@@ -22,15 +23,17 @@ class CommonDeliveryContainer extends StatelessWidget {
     required this.items,
     this.width,
     this.height,
+    this.borderColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: height ?? 200.h,
-      width: width ?? 200.w,
+      width: width ?? double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor ?? Colors.white),
         color: Colors.white,
       ),
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -53,7 +56,7 @@ class CommonDeliveryContainer extends StatelessWidget {
                 const Color.fromARGB(255, 179, 27, 16),
                 const Color.fromARGB(255, 242, 218, 216),
               ),
-              Spacer(),
+              const Spacer(),
               _coloredContainer(
                 'Pending',
                 const Color.fromARGB(255, 14, 69, 164),
@@ -80,7 +83,7 @@ class CommonDeliveryContainer extends StatelessWidget {
               _iconText(Icons.currency_rupee, price),
             ],
           ),
-          const Spacer(),
+          SizedBox(height: 20.h),
           Row(
             children: [
               Text(
@@ -91,15 +94,20 @@ class CommonDeliveryContainer extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Spacer(),
-              CommonButton(
-                icon: Icons.camera_alt_outlined,
-                buttonValue: 'Take Photo',
-                padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
-                textStyle: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13.sp,
-                  color: Colors.white,
+              const Spacer(),
+              Expanded(
+                child: CommonButton(
+                  icon: Icons.camera_alt_outlined,
+                  buttonValue: 'Take Photo',
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5.0,
+                    vertical: 5.0,
+                  ),
+                  textStyle: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13.sp,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

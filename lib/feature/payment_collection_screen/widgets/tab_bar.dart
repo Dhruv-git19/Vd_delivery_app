@@ -109,7 +109,11 @@ class PaymentMethod extends StatelessWidget {
                 SizedBox(height: 20.h),
                 Icon(Icons.qr_code, color: Colors.black, size: 70),
                 SizedBox(height: 20.h),
-                CommonButton(buttonValue: 'Confirm Delivery', onTap: () {}),
+                CommonButton(
+                  buttonValue: 'Confirm Delivery',
+                  onTap: () {},
+                  padding: EdgeInsets.all(8.r),
+                ),
                 SizedBox(height: 20.h),
               ],
             ),
