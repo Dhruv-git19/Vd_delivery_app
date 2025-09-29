@@ -14,6 +14,7 @@ class CommonTextfield extends StatelessWidget {
   final Color? borderColor;
   final Icon? icon;
   final double? radius;
+  final bool enabled;
 
   const CommonTextfield({
     super.key,
@@ -28,6 +29,7 @@ class CommonTextfield extends StatelessWidget {
     this.borderColor,
     this.icon,
     this.radius,
+    this.enabled = true,
   });
 
   @override
@@ -49,17 +51,12 @@ class CommonTextfield extends StatelessWidget {
           TextField(
             controller: textEditingController,
             keyboardType: keyboardType ?? TextInputType.number,
+            enabled: enabled,
             style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400),
             decoration: InputDecoration(
               hint: hintText != null
                   ? Row(
                       children: [
-                        Icon(
-                          Icons.search,
-                          color: AllColors.primaryColor,
-                          size: 20.sp,
-                        ),
-                        SizedBox(width: 8.w),
                         Text(
                           hintText!,
                           style: TextStyle(

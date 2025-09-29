@@ -13,7 +13,6 @@ class CommonContainer extends StatelessWidget {
   final Color? iconBgColor;
   final TextStyle? textStyle;
   final String hintText;
-  final String labelText;
   final String buttonValue;
   final VoidCallback? onTap;
 
@@ -27,7 +26,6 @@ class CommonContainer extends StatelessWidget {
     this.iconBgColor,
     this.textStyle,
     required this.hintText,
-    required this.labelText,
     required this.buttonValue,
     this.onTap,
   });
@@ -79,7 +77,7 @@ class CommonContainer extends StatelessWidget {
                     ),
               ),
               SizedBox(height: 20),
-              CommonTextfield(hintText: hintText, labelText: labelText),
+              CommonTextfield(hintText: hintText),
               SizedBox(height: 20),
               CommonButton(buttonValue: buttonValue, onTap: onTap),
               SizedBox(height: 100.h),

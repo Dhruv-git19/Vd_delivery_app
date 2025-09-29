@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vedasip_delivery_app/feature/verification%20screen/verification_screen.dart';
 
 ThemeData lightTheme = ThemeData(
   useMaterial3: true,

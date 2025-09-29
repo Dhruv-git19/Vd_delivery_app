@@ -11,11 +11,90 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AllColors.verificationColor,
-      drawer: Drawer(child: ListView(children: [])),
+      drawer: Drawer(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(32),
+            bottomRight: Radius.circular(32),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 12, top: 12),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 24),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+              Center(
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundImage: AssetImage('assets/images/profile_placeholder.png'), // Replace with your asset
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Icon(Icons.edit, size: 20, color: primaryColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              _DrawerMenuItem(
+                icon: Icons.person_outline,
+                text: 'Profile',
+                onTap: () {},
+              ),
+              _DrawerMenuItem(
+                icon: Icons.inventory_2_outlined,
+                text: 'My Delivery',
+                onTap: () {},
+              ),
+              _DrawerMenuItem(
+                icon: Icons.map_outlined,
+                text: 'Live Map',
+                onTap: () {},
+              ),
+              _DrawerMenuItem(
+                icon: Icons.help_outline,
+                text: 'Support',
+                onTap: () {},
+              ),
+              _DrawerMenuItem(
+                icon: Icons.logout,
+                text: 'Logout',
+                onTap: () {},
+              ),
+            ],
+          ),
+        ),
+      ),
+
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.menu, color: Colors.white),
+        leading: Builder(
+          builder: (context) => IconButton(
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+            icon: Icon(Icons.menu, color: Colors.white),
+          ),
         ),
         toolbarHeight: 150,
         title: Text.rich(
@@ -95,6 +174,34 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+
+class _DrawerMenuItem extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final VoidCallback onTap;
+  const _DrawerMenuItem({required this.icon, required this.text, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFEFFCF7),
+          shape: BoxShape.circle,
+        ),
+        padding: const EdgeInsets.all(8),
+        child: Icon(icon, color: primaryColor),
+      ),
+      title: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+      ),
+      onTap: onTap,
+      horizontalTitleGap: 0,
     );
   }
 }
