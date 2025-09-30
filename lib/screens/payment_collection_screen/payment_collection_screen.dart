@@ -3,11 +3,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
-import 'package:vedasip_delivery_app/feature/confirm_delivery%20screen/widgets/common_confirmation_tabbar.dart';
+import 'package:vedasip_delivery_app/screens/confirm_delivery%20screen/widgets/common_confirmation_tabbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_confirm_cont.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
 
-import 'package:vedasip_delivery_app/feature/payment_collection_screen/widgets/tab_bar.dart';
+import 'package:vedasip_delivery_app/screens/payment_collection_screen/widgets/tab_bar.dart';
 
 class PaymentCollectionScreen extends StatelessWidget {
   const PaymentCollectionScreen({super.key});

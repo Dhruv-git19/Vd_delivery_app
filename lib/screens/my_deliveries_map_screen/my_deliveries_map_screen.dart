@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_map_card.dart';
-import 'package:vedasip_delivery_app/feature/my_deliveries_map_screen/widgets/status_container.dart';
+import 'package:vedasip_delivery_app/screens/my_deliveries_map_screen/widgets/status_container.dart';
 
 class MyDeliveriesMapScreen extends StatelessWidget {
   const MyDeliveriesMapScreen({super.key});

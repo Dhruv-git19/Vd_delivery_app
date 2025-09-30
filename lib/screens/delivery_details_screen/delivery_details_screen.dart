@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vedasip_delivery_app/feature/delivery_details_screen/widgets/detail_container.dart';
+import 'package:vedasip_delivery_app/screens/delivery_details_screen/widgets/detail_container.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';

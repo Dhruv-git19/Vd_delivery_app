@@ -37,11 +37,7 @@ var blackbold16 = TextStyle(
   fontWeight: FontWeight.bold,
   color: AppColor.constBlack,
 );
-var normal16quiz = TextStyle(
-  fontSize: 16,
-  fontWeight: FontWeight.normal,
-  color: AppColor.noDataFound,
-);
+
 var blackbold22 = TextStyle(
   fontSize: 22,
   fontWeight: FontWeight.bold,
@@ -109,16 +105,7 @@ var secondaryw60018 = TextStyle(
   color: AppColor.secondaryColor,
   fontWeight: FontWeight.w600,
 );
-var greenw60018 = TextStyle(
-  fontSize: 18,
-  color: AppColor.passedText,
-  fontWeight: FontWeight.w600,
-);
-var redw60018 = TextStyle(
-  fontSize: 18,
-  color: AppColor.failedText,
-  fontWeight: FontWeight.w600,
-);
+
 var secondarybold22 = TextStyle(
   fontSize: 22,
   fontWeight: FontWeight.bold,
@@ -133,66 +120,5 @@ var secondarybold20 = TextStyle(
   fontSize: 20,
   fontWeight: FontWeight.bold,
   color: AppColor.secondaryColor,
-);
-var lightgraybold16 = TextStyle(
-  fontSize: 16,
-  fontWeight: FontWeight.bold,
-  color: AppColor.lightGray,
-);
-var lightgraybold20 = TextStyle(
-  fontSize: 20,
-  fontWeight: FontWeight.bold,
-  color: AppColor.lightGray,
-);
-var lightgray16 = TextStyle(
-  fontSize: 16,
-  color: AppColor.lightGray,
-);
-var lightgraybold14 = TextStyle(
-  fontSize: 14,
-  fontWeight: FontWeight.bold,
-  color: AppColor.lightGray,
-);
-var lightgrayW70012 = TextStyle(
-  fontSize: 12,
-  fontWeight: FontWeight.w700,
-  color: AppColor.lightGray,
-);
-var title16 = TextStyle(
-  fontSize: 16,
-  color: AppColor.titleText,
-);
-var dashboardblackheight14 = TextStyle(
-  fontSize: 14,
-  color: AppColor.dashboardBlack,
-  height: 2,
-);
-var dashboardblack16 = TextStyle(
-  fontSize: 16,
-  color: AppColor.dashboardBlack,
-);
-var redtext = TextStyle(color: AppColor.failedText);
-var redtext14 = TextStyle(color: AppColor.failedText, fontSize: 14);
-var size10 = TextStyle(fontSize: 10);
-
-var bold20 = TextStyle(
-  fontSize: 20,
-  fontWeight: FontWeight.bold,
-);
-var bold14 = TextStyle(
-  fontSize: 14,
-  fontWeight: FontWeight.bold,
-);
-var normal16 = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.normal,
-    color: AppColor.dashboardBlack);
-var bold18 = TextStyle(
-  fontSize: 18,
-  fontWeight: FontWeight.bold,
-);
-var bold16 = TextStyle(
-  fontSize: 16,
-  fontWeight: FontWeight.bold,
 );
 var blackw50014 = TextStyle(fontSize: 14, fontWeight: FontWeight.w500);

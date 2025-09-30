@@ -5,7 +5,7 @@ import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dar
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_icon_backg_cont.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
-import 'package:vedasip_delivery_app/feature/confirm_delivery%20screen/widgets/common_confirmation_tabbar.dart';
+import 'package:vedasip_delivery_app/screens/confirm_delivery%20screen/widgets/common_confirmation_tabbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_confirm_cont.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
 

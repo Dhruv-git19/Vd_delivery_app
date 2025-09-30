@@ -17,9 +17,9 @@ class DioHttp {
   final MySecureStorage _secureStorage;
 
   DioHttp()
-      : _dio = Dio()..interceptors.add(DioInterceptor()),
-        _baseUrl = dotenv.env['BASE_URL']!,
-        _secureStorage = MySecureStorage();
+    : _dio = Dio()..interceptors.add(DioInterceptor()),
+      _baseUrl = dotenv.env['BASE_URL']!,
+      _secureStorage = MySecureStorage();
 
   Future<Response> _postRequest({
     required BuildContext context,
@@ -47,7 +47,9 @@ class DioHttp {
         await _secureStorage.deleteRole();
         await _secureStorage.deleteDoNotShowOMRTutorial();
         MySnackBar.showSnackBar(
-            context, "Session expired. Please login again.");
+          context,
+          "Session expired. Please login again.",
+        );
         context.go(AppRoutes.loginscreen);
       }
       ApiErrorHandler.handleDioError(context, err);
@@ -58,15 +60,6 @@ class DioHttp {
     }
   }
 
-  Future<Response> getEditUser(BuildContext context, String userId,
-      {String? quizId}) async {
-    return _postRequest(
-      context: context,
-      endpoint: ApiEndpoint.GetSpecificUser,
-      data: {"userId": userId, "editUser": "1", "quiz_id": quizId},
-      wrapData: true,
-    );
-  }
   Future<Response> logout(BuildContext context) async {
     return _postRequest(
       context: context,
@@ -75,21 +68,10 @@ class DioHttp {
       wrapData: true,
     );
   }
-  Future<Response> getConfigParamList(
-    BuildContext context, {
-    required FilterModel filterModel,
-  }) async {
-    return _postRequest(
-      context: context,
-      endpoint: ApiEndpoint.getConfigParamList,
-      data: filterModel.toJson(),
-      wrapData: true,
-    );
-  }
+
   Future<Response> login(
     BuildContext context, {
     required String userName,
-    required String roleUniqueIds,
   }) async {
     return _postRequest(
       context: context,
@@ -101,6 +83,26 @@ class DioHttp {
       wrapData: true,
     );
   }
+
+  Future<Response> getSpecificOrdersAssignment(
+    BuildContext context) async {
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.getSpecificOrdersAssignment,
+      data: {},
+      wrapData: true,
+    );
+  }
+  Future<Response> getSpecificUser(
+    BuildContext context) async {
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.getSpecificUser,
+      data: {},
+      wrapData: true,
+    );
+  }
+
   Future<Response> verifyOTP(
     BuildContext context, {
     required String userName,
@@ -109,22 +111,7 @@ class DioHttp {
     return _postRequest(
       context: context,
       endpoint: ApiEndpoint.verifyOTP,
-      data: {
-        "userName": userName,
-        "otp": otp,
-      },
-      wrapData: true,
-    );
-  }
-
-  Future<Response> getQuizListManagement(
-    BuildContext context, {
-    required FilterModel filterModel,
-  }) async {
-    return _postRequest(
-      context: context,
-      endpoint: ApiEndpoint.getQuizListManagement,
-      data: filterModel.toJson(),
+      data: {"userName": userName, "otp": otp},
       wrapData: true,
     );
   }

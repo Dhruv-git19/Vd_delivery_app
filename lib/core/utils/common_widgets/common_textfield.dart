@@ -15,6 +15,7 @@ class CommonTextfield extends StatelessWidget {
   final Icon? icon;
   final double? radius;
   final bool enabled;
+  final ValueChanged<String>? onChanged;
 
   const CommonTextfield({
     super.key,
@@ -30,6 +31,7 @@ class CommonTextfield extends StatelessWidget {
     this.icon,
     this.radius,
     this.enabled = true,
+    this.onChanged,
   });
 
   @override
@@ -53,6 +55,7 @@ class CommonTextfield extends StatelessWidget {
             keyboardType: keyboardType ?? TextInputType.number,
             enabled: enabled,
             style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400),
+            onChanged: onChanged,
             decoration: InputDecoration(
               hint: hintText != null
                   ? Row(

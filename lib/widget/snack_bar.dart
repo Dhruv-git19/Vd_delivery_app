@@ -11,11 +11,17 @@ class MySnackBar {
     try {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            message,
-            style: whitebold,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          content: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              gradient: AppColor.mainGradient,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(message, style: whitebold),
           ),
-          backgroundColor: AppColor.primaryColor,
         ),
       );
     } catch (e) {
@@ -28,11 +34,17 @@ class MySnackBar {
     if (rootScaffoldMessengerKey.currentState != null) {
       rootScaffoldMessengerKey.currentState!.showSnackBar(
         SnackBar(
-          content: Text(
-            message,
-            style: whitebold,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          content: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              gradient: AppColor.mainGradient,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(message, style: whitebold),
           ),
-          backgroundColor: AppColor.primaryColor,
         ),
       );
     }
