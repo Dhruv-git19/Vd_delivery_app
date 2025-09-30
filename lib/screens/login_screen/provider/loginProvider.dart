@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 import 'package:vedasip_delivery_app/services/dio_http.dart';
+import 'package:vedasip_delivery_app/core/model/base_api_response.dart';
 import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
 
 class LoginProvider with ChangeNotifier {
@@ -23,18 +26,21 @@ class LoginProvider with ChangeNotifier {
     notifyListeners();
     final response = await _dioHttp.login(context, userName: phone);
     isLoading = false;
-    if (response.data['dataResponse']['returnCode'] == 0) {
+    final apiResponse = BaseApiResponse<Map<String, dynamic>>.fromJson(
+      response.data,
+      (data) => data as Map<String, dynamic>,
+    );
+    if (apiResponse.dataResponse.returnCode == 0) {
       otpSent = true;
-      testOtp = response.data['data']['otp'].toString();
+      testOtp = apiResponse.data?['otp'].toString();
     } else {
       otpSent = false;
       testOtp = null;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            response.data['dataResponse']['description'] ?? 'Login failed',
-          ),
-        ),
+      MySnackBar.showSnackBar(
+        context,
+        apiResponse.dataResponse.description.isNotEmpty
+            ? apiResponse.dataResponse.description
+            : 'Failed to send OTP',
       );
     }
     notifyListeners();
@@ -65,17 +71,22 @@ class LoginProvider with ChangeNotifier {
       otp: int.parse(otpText),
     );
     isLoading = false;
+    final apiResponse = BaseApiResponse<Map<String, dynamic>>.fromJson(
+      response.data,
+      (data) => data as Map<String, dynamic>,
+    );
     notifyListeners();
-    if (response.data['dataResponse']['returnCode'] == 0) {
-      final token = response.data['data']['token'];
+    if (apiResponse.dataResponse.returnCode == 0) {
+      final token = apiResponse.data?['token'];
       await MySecureStorage().writeToken(token);
       MySnackBar.showSnackBar(context, "Login successful");
       return true;
     } else {
       MySnackBar.showSnackBar(
         context,
-        response.data['dataResponse']['description'] ??
-            'OTP verification failed',
+        apiResponse.dataResponse.description.isNotEmpty
+            ? apiResponse.dataResponse.description
+            : 'OTP verification failed',
       );
       return false;
     }

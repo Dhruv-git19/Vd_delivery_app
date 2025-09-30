@@ -6,9 +6,8 @@ import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/provider/homeProvider.dart';
-import 'package:vedasip_delivery_app/screens/home_screen/widgets/iconTextWidget.dart';
+import 'package:vedasip_delivery_app/screens/home_screen/widgets/order_list_view.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/widgets/drawerMenuItemWidget.dart';
-import 'package:vedasip_delivery_app/screens/home_screen/widgets/coloredContainerWidget.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/widgets/home_screen_shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -176,96 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? const HomeScreenShimmer()
                       : provider.orders.isEmpty
                       ? Center(child: Text('No deliveries found'))
-                      : ListView.builder(
-                          itemCount: provider.orders.length,
-                          itemBuilder: (context, index) {
-                            final order = provider.orders[index];
-                            return Container(
-                              height: 200.h,
-                              width: double.infinity,
-                              margin: const EdgeInsets.symmetric(vertical: 6),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white),
-                                color: Colors.white,
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12.w,
-                                vertical: 8.h,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Order #${order.id}',
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          color: Color(0xFF6C6C6C),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      SizedBox(width: 5.w),
-                                      coloredContainer(
-                                        'High',
-                                        const Color(0xFFB31B10),
-                                        const Color(0xFFF2DAD8),
-                                      ),
-                                      const Spacer(),
-                                      coloredContainer(
-                                        'Pending',
-                                        const Color(0xFF0E45A4),
-                                        const Color(0xFFD7E9F9),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 20.h),
-                                  Text(
-                                    order.address?.toString() ?? 'N/A',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      color: Color(0xFF929292),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 20.h),
-                                  Row(
-                                    children: [
-                                      iconText(
-                                        Icons.access_time_outlined,
-                                        order.createdOn,
-                                      ),
-                                      SizedBox(width: 20.w),
-                                      iconText(
-                                        Icons.location_on_outlined,
-                                        order.distanceInfo?.toString() ?? '',
-                                      ),
-                                      SizedBox(width: 20.w),
-                                      iconText(
-                                        Icons.currency_rupee,
-                                        order.totalAmount,
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 20.h),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        order.cart != null ? '1 cart' : '',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF838383),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                      : OrderListView(orders: provider.orders),
                 ),
               ],
             ),
