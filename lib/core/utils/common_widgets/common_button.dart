@@ -14,6 +14,7 @@ class CommonButton extends StatelessWidget {
   final double? width;
   final double borderRadius;
   final Color? outlineColor;
+  final BoxConstraints? boxConstraints;
 
   const CommonButton({
     super.key,
@@ -28,6 +29,7 @@ class CommonButton extends StatelessWidget {
     this.width,
     this.borderRadius = 10.0,
     this.outlineColor,
+    this.boxConstraints,
   });
 
   @override

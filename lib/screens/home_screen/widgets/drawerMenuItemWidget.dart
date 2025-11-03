@@ -1,11 +1,12 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 
 class DrawerMenuItem extends StatelessWidget {
   final IconData icon;
   final String text;
   final VoidCallback onTap;
+
   const DrawerMenuItem({
     required this.icon,
     required this.text,
@@ -14,21 +15,34 @@ class DrawerMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFEFFCF7),
-          shape: BoxShape.circle,
-        ),
-        padding: const EdgeInsets.all(8),
-        child: Icon(icon, color: primaryColor),
-      ),
-      title: Text(
-        text,
-        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-      ),
+    return InkWell(
+      borderRadius: BorderRadius.circular(12.r),
       onTap: onTap,
-      horizontalTitleGap: 0,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 10.h),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.r),
+              decoration: BoxDecoration(
+                color: AllColors.drawerIconBackColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: primaryColor, size: 22.r),
+            ),
+            SizedBox(width: 14.w),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 16.sp,
+
+                fontWeight: FontWeight.w400,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

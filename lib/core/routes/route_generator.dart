@@ -1,14 +1,18 @@
 import 'package:go_router/go_router.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
+import 'package:vedasip_delivery_app/screens/deliveries_list_screen/deliveries_list_screen.dart';
+import 'package:vedasip_delivery_app/screens/live_map_screen/live_map_screen.dart';
 import 'package:vedasip_delivery_app/screens/login_screen/view/login_screen.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/delivery_details_screen.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/view/home_screen.dart';
 import 'package:vedasip_delivery_app/screens/confirm_delivery%20screen/confirm_delivery%20screen.dart';
+import 'package:vedasip_delivery_app/screens/my_deliveries_map_screen/my_deliveries_map_screen.dart';
+import 'package:vedasip_delivery_app/screens/payment_collection_screen/payment_collection_screen.dart';
 import 'package:vedasip_delivery_app/screens/splash_screen/splash_screen.dart';
 
 class MyAppRouter {
   GoRouter router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/paymentCollection',
     routes: [
       GoRoute(
         path: '/',
@@ -34,6 +38,21 @@ class MyAppRouter {
         path: '/confirmDelivery',
         name: AppRoutes.confirmDeliveryScreen,
         builder: (context, state) => const ConfirmDeliveryScreen(),
+      ),
+      GoRoute(
+        path: '/deliveryList',
+        name: AppRoutes.deliveryListScreen,
+        builder: (context, state) => const DeliveriesListScreen(),
+      ),
+      GoRoute(
+        path: '/paymentCollection',
+        name: AppRoutes.paymentCollectionScreen,
+        builder: (context, state) => const PaymentCollectionScreen(),
+      ),
+      GoRoute(
+        path: '/deliveryMap',
+        name: AppRoutes.myDeliveriesMapScreen,
+        builder: (context, state) => const MyDeliveriesMapScreen(),
       ),
     ],
   );
