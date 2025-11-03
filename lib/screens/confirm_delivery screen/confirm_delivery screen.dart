@@ -63,7 +63,7 @@ class ConfirmDeliveryScreen extends StatelessWidget {
   Widget _confirmationContainer() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 5.w),
+      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 5.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10.r),
@@ -81,7 +81,7 @@ class ConfirmDeliveryScreen extends StatelessWidget {
           SizedBox(height: 10.h),
           Container(
             width: double.infinity,
-            padding: EdgeInsets.symmetric(vertical: 5.h),
+            padding: EdgeInsets.symmetric(vertical: 7.h),
             decoration: BoxDecoration(
               color: const Color.fromARGB(255, 225, 255, 247),
               borderRadius: BorderRadius.circular(8.r),
@@ -132,14 +132,58 @@ class ConfirmDeliveryScreen extends StatelessWidget {
                   'No  photo captured yest',
                   style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                 ),
-                SizedBox(height: 5.h),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.center,
-                //   children: [
-                //     CommonButton(buttonValue: 'Take Photo'),
-                //     CommonButton(buttonValue: 'Upload File'),
-                //   ],
-                // ),
+                SizedBox(height: 19.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 5.w),
+                    Expanded(
+                      child: CommonButton(
+                        buttonValue: 'Take Photo',
+                        textStyle: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 10.sp,
+                          color: AllColors.deliverydetailfontColor,
+                        ),
+                        borderRadius: 4.r,
+                        padding: EdgeInsets.symmetric(
+                          vertical: 5.h,
+                          horizontal: 2.h,
+                        ),
+                        backgroundColor: Colors.transparent,
+                        outlineColor: Colors.grey,
+                        boxConstraints: BoxConstraints(
+                          maxWidth: 40.w,
+                          maxHeight: 20.h,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 20.w),
+                    Expanded(
+                      child: CommonButton(
+                        borderRadius: 4.r,
+                        boxConstraints: BoxConstraints(
+                          maxWidth: 40.w,
+                          maxHeight: 20.h,
+                        ),
+                        textStyle: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 10.sp,
+                          color: AllColors.deliverydetailfontColor,
+                        ),
+                        backgroundColor: Colors.transparent,
+                        outlineColor: Colors.grey,
+                        buttonValue: 'Upload File',
+                        padding: EdgeInsets.symmetric(
+                          vertical: 5.h,
+                          horizontal: 2.h,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 5.w),
+                  ],
+                ),
+                SizedBox(height: 12.h),
               ],
             ),
           ),
@@ -167,11 +211,11 @@ class ConfirmDeliveryScreen extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.grey[800],
                   fontSize: 15.sp,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               Spacer(),
-              Text('2 Items'),
+              Text('2 Items', style: TextStyle(fontWeight: FontWeight.w500)),
             ],
           ),
           Text(
@@ -180,6 +224,10 @@ class ConfirmDeliveryScreen extends StatelessWidget {
           ),
           SizedBox(height: 10.h),
           CommonTextfield(
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 0.h,
+              horizontal: 5.w,
+            ),
             hintText: 'Enter the numbers',
             fillColor: Colors.white,
             borderColor: Colors.grey.shade300,

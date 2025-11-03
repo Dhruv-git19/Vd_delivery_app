@@ -16,6 +16,7 @@ class CommonTextfield extends StatelessWidget {
   final double? radius;
   final bool enabled;
   final ValueChanged<String>? onChanged;
+  final EdgeInsetsGeometry? contentPadding;
 
   const CommonTextfield({
     super.key,
@@ -32,6 +33,7 @@ class CommonTextfield extends StatelessWidget {
     this.radius,
     this.enabled = true,
     this.onChanged,
+    this.contentPadding,
   });
 
   @override
@@ -44,7 +46,7 @@ class CommonTextfield extends StatelessWidget {
         children: [
           if (labelText != null)
             Padding(
-              padding: EdgeInsets.only(bottom: 4.h),
+              padding: EdgeInsets.only(bottom: 2.h),
               child: Text(
                 labelText!,
                 style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
@@ -57,6 +59,9 @@ class CommonTextfield extends StatelessWidget {
             style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400),
             onChanged: onChanged,
             decoration: InputDecoration(
+              contentPadding:
+                  contentPadding ??
+                  EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
               hint: hintText != null
                   ? Row(
                       children: [

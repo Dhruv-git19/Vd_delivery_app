@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_icon_backg_cont.dart';
 
@@ -16,46 +17,55 @@ class DetailContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(7),
+      padding: EdgeInsets.all(7.r),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: const Color.fromARGB(255, 204, 204, 204)),
-        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AllColors.deliverydetailBoundary),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Column(
         children: [
           Row(
             children: [
               CircleAvatar(),
-              SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     name,
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.grey[600],
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AllColors.deliverydetailfontColor,
                     ),
                   ),
                   Text(
                     customerType,
-                    style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: AllColors.deliverydetailfontColor,
+                    ),
                   ),
                 ],
               ),
               Spacer(),
-              CommonIconBackgCont(icon: Icon(Icons.call, color: primaryColor)),
-              SizedBox(width: 5),
+              CommonIconBackgCont(
+                icon: Icon(Icons.call, color: primaryColor),
+                backgroundColor: Color(0xFFF3F4F6),
+              ),
+              SizedBox(width: 5.w),
               CommonIconBackgCont(
                 icon: Icon(Icons.message_outlined, color: primaryColor),
+                backgroundColor: Color(0xFFF3F4F6),
               ),
             ],
           ),
-          Divider(indent: 20, endIndent: 20),
-          SizedBox(height: 20),
+          SizedBox(height: 7.h),
+          Divider(indent: 20, endIndent: 20, color: Colors.grey[100]),
+          SizedBox(height: 7.h),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
                 Icons.location_on_outlined,
@@ -69,32 +79,31 @@ class DetailContainer extends StatelessWidget {
                   Text(
                     'Delivery Address',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[600],
+                      color: AllColors.deliverydetailfontColor,
                     ),
                   ),
                   Text(
                     address,
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[600],
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6E6E6E),
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 7.h),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                _customicon(Icons.timelapse_rounded, 'ETA', '30 Min'),
-                _customicon(Icons.telegram, 'Distance', '2.3 Km'),
-                _customicon(Icons.currency_rupee, 'Amount', '\$80'),
+                _customicon(Icons.telegram_outlined, 'Distance', '2.3 Km'),
+                _customicon(Icons.currency_rupee, 'Amount', '80.00'),
               ],
             ),
           ),
@@ -105,19 +114,28 @@ class DetailContainer extends StatelessWidget {
 }
 
 Widget _customicon(IconData icon, String descrip1, String descrip2) {
-  return Column(
+  return Row(
     children: [
-      Icon(icon, size: 32, color: Colors.grey[600]),
-      Text(descrip1, style: TextStyle(fontSize: 15, color: Colors.grey[600])),
-      SizedBox(height: 5),
+      Icon(icon, size: 20.r, color: Color(0xFF6E6E6E)),
+      SizedBox(width: 3.w),
+      Text(
+        descrip1,
+        style: TextStyle(
+          fontSize: 12.sp,
+          color: Color(0xFF6E6E6E),
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      SizedBox(width: 7.w),
       Text(
         descrip2,
         style: TextStyle(
-          fontSize: 16,
-          color: Colors.grey[600],
-          fontWeight: FontWeight.w700,
+          fontSize: 14.sp,
+          color: Color(0xFF6E6E6E),
+          fontWeight: FontWeight.w600,
         ),
       ),
+      SizedBox(width: 30.w),
     ],
   );
 }

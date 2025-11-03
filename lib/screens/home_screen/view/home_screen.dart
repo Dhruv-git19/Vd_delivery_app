@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
+import 'package:vedasip_delivery_app/screens/my_deliveries_map_screen/widgets/map_image_container.dart';
 import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/provider/homeProvider.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/widgets/order_list_view.dart';
@@ -22,16 +23,17 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<HomeProvider>(context, listen: false);
-      provider.fetchData(context);
+      Provider.of<HomeProvider>(context, listen: false).fetchData(context);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AllColors.verificationColor,
+      backgroundColor: Colors.white,
+
       drawer: Drawer(
+        backgroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topRight: Radius.circular(32),
@@ -39,148 +41,224 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 12, top: 12),
-                child: IconButton(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// Back button
+                IconButton(
                   icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 24),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => Navigator.pop(context),
                 ),
-              ),
-              Center(
-                child: Stack(
-                  children: [
-                    CircleAvatar(radius: 40),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(color: Colors.black12, blurRadius: 4),
+
+                const SizedBox(height: 8),
+
+                Center(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      CircleAvatar(
+                        radius: 45.r,
+                        backgroundImage: AssetImage(
+                          "assets/images/profilePhoto.png",
+                        ),
+                      ),
+                      Positioned(
+                        bottom: -2,
+                        right: -2,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(color: Colors.black12, blurRadius: 4),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.edit,
+                            size: 18,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                DrawerMenuItem(
+                  icon: Icons.person_outline,
+                  text: 'Profile',
+                  onTap: () {},
+                ),
+                DrawerMenuItem(
+                  icon: Icons.inventory_2_outlined,
+                  text: 'My Delivery',
+                  onTap: () {},
+                ),
+                DrawerMenuItem(
+                  icon: Icons.map_outlined,
+                  text: 'Live Map',
+                  onTap: () {},
+                ),
+                DrawerMenuItem(
+                  icon: Icons.help_outline,
+                  text: 'Support',
+                  onTap: () {},
+                ),
+                DrawerMenuItem(
+                  icon: Icons.logout,
+                  text: 'Logout',
+                  onTap: () async {
+                    await MySecureStorage().deleteToken();
+                    Navigator.pop(context);
+                    context.go(AppRoutes.loginscreen);
+                  },
+                ),
+
+                const Spacer(),
+              ],
+            ),
+          ),
+        ),
+      ),
+
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200.h,
+            pinned: false,
+            floating: false,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(12),
+                    bottomRight: Radius.circular(12),
+                  ),
+                  gradient: LinearGradient(
+                    colors: [primaryColor, secondaryColor],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+
+                child: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Builder(
+                              builder: (context) => IconButton(
+                                icon: const Icon(
+                                  Icons.menu,
+                                  color: Colors.white,
+                                  size: 26,
+                                ),
+                                onPressed: () =>
+                                    Scaffold.of(context).openDrawer(),
+                              ),
+                            ),
+
+                            Expanded(
+                              child: Consumer<HomeProvider>(
+                                builder: (_, provider, __) => Text(
+                                  "Welcome ${provider.user?.fullName ?? 'Joe Doe'}",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+
+                            IconButton(
+                              icon: const Icon(
+                                Icons.notifications,
+                                color: Colors.white,
+                                size: 26,
+                              ),
+                              onPressed: () {},
+                            ),
                           ],
                         ),
-                        child: Icon(Icons.edit, size: 20, color: primaryColor),
+
+                        SizedBox(height: 10.h),
+
+                        SizedBox(
+                          height: 125.h,
+                          width: double.infinity,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: MapImage(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(22.w),
+                topRight: Radius.circular(22.w),
+              ),
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 10.h),
+                    Text(
+                      'Todays Delivery',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                        color: verifyheadingcolor,
                       ),
                     ),
+                    SizedBox(height: 10.h),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              DrawerMenuItem(
-                icon: Icons.person_outline,
-                text: 'Profile',
-                onTap: () {},
-              ),
-              DrawerMenuItem(
-                icon: Icons.inventory_2_outlined,
-                text: 'My Delivery',
-                onTap: () {},
-              ),
-              DrawerMenuItem(
-                icon: Icons.map_outlined,
-                text: 'Live Map',
-                onTap: () {},
-              ),
-              DrawerMenuItem(
-                icon: Icons.help_outline,
-                text: 'Support',
-                onTap: () {},
-              ),
-              DrawerMenuItem(
-                icon: Icons.logout,
-                text: 'Logout',
-                onTap: () async {
-                  await MySecureStorage().deleteToken();
-                  Navigator.of(context).pop();
-                  context.go(AppRoutes.loginscreen);
+            ),
+          ),
+
+          SliverFillRemaining(
+            hasScrollBody: true,
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Consumer<HomeProvider>(
+                builder: (_, provider, _) {
+                  if (provider.isLoading) return const HomeScreenShimmer();
+                  if (provider.orders.isEmpty) {
+                    return const Center(child: Text("No deliveries found"));
+                  }
+                  return OrderListView(orders: provider.orders);
                 },
               ),
-            ],
-          ),
-        ),
-      ),
-      appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            onPressed: () async {
-              Scaffold.of(context).openDrawer();
-            },
-            icon: Icon(Icons.menu, color: Colors.white),
-          ),
-        ),
-        toolbarHeight: 150,
-        title: Consumer<HomeProvider>(
-          builder: (context, provider, _) => Text.rich(
-            TextSpan(
-              children: [
-                const TextSpan(
-                  text: 'Welcome ',
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white,
-                  ),
-                ),
-                TextSpan(
-                  text: provider.user?.fullName ?? '',
-                  style: const TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
             ),
           ),
-        ),
-        actions: [Icon(Icons.notifications, color: Colors.white)],
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
-            ),
-            gradient: LinearGradient(
-              colors: [primaryColor, secondaryColor],
-              begin: AlignmentDirectional.topCenter,
-              end: AlignmentDirectional.bottomCenter,
-            ),
-          ),
-        ),
-      ),
-      body: Consumer<HomeProvider>(
-        builder: (context, provider, _) {
-          return Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              children: [
-                Text(
-                  'Todays Delivery',
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
-                    color: verifyheadingcolor,
-                  ),
-                ),
-                SizedBox(height: 10.h),
-                Expanded(
-                  child: provider.isLoading
-                      ? const HomeScreenShimmer()
-                      : provider.orders.isEmpty
-                      ? Center(child: Text('No deliveries found'))
-                      : OrderListView(orders: provider.orders),
-                ),
-              ],
-            ),
-          );
-        },
+        ],
       ),
     );
   }

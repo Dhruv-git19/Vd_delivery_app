@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:vedasip_delivery_app/core/theme/theme.dart';
 
 class DeliveryConfirmCont extends StatelessWidget {
   final String name;
@@ -36,14 +37,17 @@ class DeliveryConfirmCont extends StatelessWidget {
                   Text(
                     name,
                     style: TextStyle(
-                      fontSize: 17.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.grey[700],
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AllColors.deliverydetailfontColor,
                     ),
                   ),
                   Text(
                     address,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: AllColors.deliverydetailshadelight,
+                    ),
                   ),
                 ],
               ),
@@ -57,14 +61,20 @@ class DeliveryConfirmCont extends StatelessWidget {
                       Text(
                         rupee,
                         style: TextStyle(
-                          fontSize: 15.sp,
-                          color: Colors.grey[900],
+                          fontSize: 16.sp,
+                          color: Color(0xFF4F5A69),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
-                  Text(items),
+                  Text(
+                    items,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11.sp,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -75,7 +85,7 @@ class DeliveryConfirmCont extends StatelessWidget {
             children: [
               Icon(
                 Icons.shopping_bag_outlined,
-                color: Colors.grey[600],
+                color: AllColors.deliverydetailshadelight,
                 size: 22.sp,
               ),
               SizedBox(width: 10),
@@ -87,7 +97,7 @@ class DeliveryConfirmCont extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[600],
+                      color: AllColors.deliverydetailshadelight,
                     ),
                   ),
                 ],

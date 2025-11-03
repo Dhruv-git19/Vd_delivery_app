@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
 
 class CommonDeliveryContainer extends StatelessWidget {
@@ -29,7 +30,7 @@ class CommonDeliveryContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: height ?? 200.h,
+      height: height ?? 145.h,
       width: width ?? double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -44,10 +45,10 @@ class CommonDeliveryContainer extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: const TextStyle(
-                  fontSize: 20,
-                  color: Color.fromARGB(255, 108, 108, 108),
-                  fontWeight: FontWeight.bold,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  color: AllColors.deliverydetailshadelight,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               SizedBox(width: 5.w),
@@ -58,22 +59,22 @@ class CommonDeliveryContainer extends StatelessWidget {
               ),
               const Spacer(),
               _coloredContainer(
-                'Pending',
-                const Color.fromARGB(255, 14, 69, 164),
-                const Color.fromARGB(255, 215, 233, 249),
+                'Delivered',
+                AllColors.primaryColor,
+                Color(0xFFE8FFF9),
               ),
             ],
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 2.h),
           Text(
             location,
-            style: const TextStyle(
-              fontSize: 15,
-              color: Color.fromARGB(255, 146, 146, 146),
-              fontWeight: FontWeight.bold,
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: AllColors.deliverydetailshadelight,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 10.h),
           Row(
             children: [
               _iconText(Icons.access_time_outlined, time),
@@ -83,7 +84,7 @@ class CommonDeliveryContainer extends StatelessWidget {
               _iconText(Icons.currency_rupee, price),
             ],
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 10.h),
           Row(
             children: [
               Text(
@@ -95,19 +96,15 @@ class CommonDeliveryContainer extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Expanded(
-                child: CommonButton(
-                  icon: Icons.camera_alt_outlined,
-                  buttonValue: 'Take Photo',
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5.0,
-                    vertical: 5.0,
-                  ),
-                  textStyle: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13.sp,
-                    color: Colors.white,
-                  ),
+              Container(
+                padding: EdgeInsets.all(2.r),
+                decoration: BoxDecoration(
+                  color: AllColors.primaryColor,
+                  borderRadius: BorderRadius.circular(3.r),
+                ),
+                child: Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.white,
                 ),
               ),
             ],
