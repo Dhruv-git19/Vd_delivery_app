@@ -1,7 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/screens/deliveries_list_screen/deliveries_list_screen.dart';
-import 'package:vedasip_delivery_app/screens/live_map_screen/live_map_screen.dart';
 import 'package:vedasip_delivery_app/screens/login_screen/view/login_screen.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/delivery_details_screen.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/view/home_screen.dart';
@@ -12,7 +11,7 @@ import 'package:vedasip_delivery_app/screens/splash_screen/splash_screen.dart';
 
 class MyAppRouter {
   GoRouter router = GoRouter(
-    initialLocation: '/paymentCollection',
+    initialLocation: '/',
     routes: [
       GoRoute(
         path: '/',

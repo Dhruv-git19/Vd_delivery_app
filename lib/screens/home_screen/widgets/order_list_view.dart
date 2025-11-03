@@ -33,7 +33,7 @@ class OrderListView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    order.userId.toString(),
+                    order.userDetails?.fullName ?? 'Unknown',
                     style: const TextStyle(
                       fontSize: 20,
                       color: Color(0xFF222222),
@@ -65,7 +65,7 @@ class OrderListView extends StatelessWidget {
               ),
               SizedBox(height: 8.h),
               Text(
-                order.address?.toString() ?? 'unknown address',
+                order.address?.fullAddress ?? 'unknown address',
                 style: const TextStyle(
                   fontSize: 15,
                   color: Color(0xFF6C6C6C),
@@ -82,25 +82,15 @@ class OrderListView extends StatelessWidget {
                   ),
                   SizedBox(width: 4.w),
                   Text(
-                    '30 min',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6C6C6C),
-                    ),
+                    order.distanceInfo?.duration ?? 'N/A',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF6C6C6C)),
                   ),
                   SizedBox(width: 16.w),
-                  Icon(
-                    Icons.navigation,
-                    size: 18,
-                    color: Color(0xFFB0B0B0),
-                  ),
+                  Icon(Icons.navigation, size: 18, color: Color(0xFFB0B0B0)),
                   SizedBox(width: 4.w),
                   Text(
-                    '2.3 km',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6C6C6C),
-                    ),
+                    order.distanceInfo?.distance ?? 'N/A',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF6C6C6C)),
                   ),
                   SizedBox(width: 16.w),
                   Icon(
@@ -111,10 +101,7 @@ class OrderListView extends StatelessWidget {
                   SizedBox(width: 4.w),
                   Text(
                     order.totalAmount.toString(),
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6C6C6C),
-                    ),
+                    style: TextStyle(fontSize: 13, color: Color(0xFF6C6C6C)),
                   ),
                 ],
               ),
