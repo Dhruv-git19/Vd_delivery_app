@@ -9,7 +9,7 @@ class MapImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(6.r),
       child: SizedBox(
         width: 200.w,
         height: 136.h,

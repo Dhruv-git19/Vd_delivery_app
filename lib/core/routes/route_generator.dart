@@ -10,6 +10,7 @@ import 'package:vedasip_delivery_app/screens/confirm_delivery%20screen/confirm_d
 import 'package:vedasip_delivery_app/screens/my_deliveries_map_screen/my_deliveries_map_screen.dart';
 import 'package:vedasip_delivery_app/screens/payment_collection_screen/payment_collection_screen.dart';
 import 'package:vedasip_delivery_app/screens/splash_screen/splash_screen.dart';
+import 'package:vedasip_delivery_app/screens/verification_screen.dart/verification_screen.dart';
 
 class MyAppRouter {
   GoRouter router = GoRouter(
@@ -63,6 +64,11 @@ class MyAppRouter {
         path: '/deliveryMap',
         name: AppRoutes.myDeliveriesMapScreen,
         builder: (context, state) => const MyDeliveriesMapScreen(),
+      ),
+      GoRoute(
+        path: '/verification',
+        name: AppRoutes.verificationscreen,
+        builder: (context, state) => const VerificationScreen(),
       ),
     ],
   );

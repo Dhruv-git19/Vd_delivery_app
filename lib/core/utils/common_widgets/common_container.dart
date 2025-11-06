@@ -33,16 +33,11 @@ class CommonContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: width?.w,
+      height: height?.h,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20.r),
-        color:
-            backgroundColor ??
-            const Color.fromARGB(
-              255,
-              253,
-              255,
-              253,
-            ), //change when using it on actual screen , just for showing that it exist.....
+        color: backgroundColor ?? const Color.fromARGB(255, 253, 255, 253),
       ),
       child: Padding(
         padding: EdgeInsets.all(18.r),
@@ -60,7 +55,7 @@ class CommonContainer extends StatelessWidget {
                 child: Center(
                   child: Icon(
                     Icons.fire_truck_outlined,
-                    size: 28,
+                    size: 28.r,
                     color: iconColor ?? Colors.white,
                   ),
                 ),
@@ -76,10 +71,14 @@ class CommonContainer extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 20.h),
               CommonTextfield(hintText: hintText),
-              SizedBox(height: 20),
-              CommonButton(buttonValue: buttonValue, onTap: onTap),
+              SizedBox(height: 20.h),
+              CommonButton(
+                buttonValue: buttonValue,
+                onTap: onTap,
+                isfullWidth: true,
+              ),
               SizedBox(height: 100.h),
               Text(
                 'By logging in, you agree to our Terms of Service',

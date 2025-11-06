@@ -85,10 +85,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                       color: primaryColor,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Center(
+                                    child: Center(
                                       child: Icon(
                                         Icons.fire_truck_outlined,
-                                        size: 28,
+                                        size: 28.r,
                                         color: Colors.white,
                                       ),
                                     ),
@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  SizedBox(height: 20),
+                                  SizedBox(height: 20.h),
                                   CommonTextfield(
                                     hintText: 'Enter Phone Number',
                                     textEditingController: phoneController,
@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         provider.validatePhone(value),
                                   ),
                                   if (provider.otpSent) ...[
-                                    SizedBox(height: 20),
+                                    SizedBox(height: 20.h),
                                     CommonTextfield(
                                       hintText: 'Enter OTP',
                                       textEditingController: otpController,
@@ -121,9 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     if (provider.testOtp != null)
                                       Padding(
-                                        padding: const EdgeInsets.only(
-                                          top: 8.0,
-                                        ),
+                                        padding: EdgeInsets.only(top: 8.0.h),
                                         child: Text(
                                           'Test OTP: ${provider.testOtp}',
                                           style: const TextStyle(
@@ -131,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                         ),
                                       ),
-                                    SizedBox(height: 10),
+                                    SizedBox(height: 10.h),
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
@@ -154,10 +152,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ],
                                     ),
                                   ],
-                                  SizedBox(height: 20),
+                                  SizedBox(height: 20.h),
                                   provider.isLoading
                                       ? const CircularProgressIndicator()
                                       : CommonButton(
+                                          isfullWidth: true,
                                           onTap: provider.otpSent
                                               ? () async {
                                                   final success = await provider
@@ -180,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                               ? 'Verify & Login'
                                               : 'Send OTP',
                                         ),
-                                  SizedBox(height: 50),
+                                  SizedBox(height: 50.h),
                                   Text(
                                     'By logging in, you agree to our Terms of Service',
                                     textAlign: TextAlign.center,

@@ -33,7 +33,7 @@ class DetailContainer extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(),
+              const CircleAvatar(),
               SizedBox(width: 10.w),
               Expanded(
                 child: Column(
@@ -54,17 +54,17 @@ class DetailContainer extends StatelessWidget {
               ),
               CommonIconBackgCont(
                 icon: Icon(Icons.call, color: primaryColor),
-                backgroundColor: Color(0xFFF3F4F6),
+                backgroundColor: const Color(0xFFF3F4F6),
               ),
               SizedBox(width: 5.w),
               CommonIconBackgCont(
                 icon: Icon(Icons.message_outlined, color: primaryColor),
-                backgroundColor: Color(0xFFF3F4F6),
+                backgroundColor: const Color(0xFFF3F4F6),
               ),
             ],
           ),
           SizedBox(height: 7.h),
-          Divider(indent: 20, endIndent: 20, color: Colors.grey[100]),
+          Divider(indent: 20.w, endIndent: 20.w, color: Colors.grey[100]),
           SizedBox(height: 7.h),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +72,7 @@ class DetailContainer extends StatelessWidget {
               Icon(
                 Icons.location_on_outlined,
                 color: Colors.grey[600],
-                size: 30,
+                size: 30.r,
               ),
               SizedBox(width: 10),
               Expanded(
@@ -104,7 +104,7 @@ class DetailContainer extends StatelessWidget {
           ),
           SizedBox(height: 7.h),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.r),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [

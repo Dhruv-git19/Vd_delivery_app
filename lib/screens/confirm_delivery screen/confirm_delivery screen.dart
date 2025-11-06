@@ -118,7 +118,7 @@ class ConfirmDeliveryScreen extends StatelessWidget {
           ),
           SizedBox(height: 10.h),
           CommonDottedBox(
-            paddding: EdgeInsets.all(10),
+            paddding: EdgeInsets.all(10.r),
             width: double.infinity,
             child: Column(
               children: [
@@ -139,6 +139,7 @@ class ConfirmDeliveryScreen extends StatelessWidget {
                     SizedBox(width: 5.w),
                     Expanded(
                       child: CommonButton(
+                        isfullWidth: false,
                         buttonValue: 'Take Photo',
                         textStyle: TextStyle(
                           fontWeight: FontWeight.w500,
@@ -162,6 +163,7 @@ class ConfirmDeliveryScreen extends StatelessWidget {
                     Expanded(
                       child: CommonButton(
                         borderRadius: 4.r,
+                        isfullWidth: false,
                         boxConstraints: BoxConstraints(
                           maxWidth: 40.w,
                           maxHeight: 20.h,
@@ -198,7 +200,7 @@ class ConfirmDeliveryScreen extends StatelessWidget {
       padding: EdgeInsets.all(10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: Column(

@@ -15,15 +15,15 @@ class MyDeliveriesMapScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: CommonAppbar(title: 'My Deliveries '),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(8.w),
         child: Column(
           children: [
-            SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Container(
-              padding: EdgeInsets.all(10),
+              padding: EdgeInsets.all(10.r),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Column(
                 children: [
@@ -32,11 +32,11 @@ class MyDeliveriesMapScreen extends StatelessWidget {
                       Text(
                         'Alice Smith',
                         style: TextStyle(
-                          fontSize: 19,
+                          fontSize: 19.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       StatusContainer(
                         text: 'Ready To Deliver',
                         contColor: const Color.fromARGB(255, 221, 235, 248),
@@ -44,11 +44,11 @@ class MyDeliveriesMapScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: Colors.grey),
-                      SizedBox(width: 10),
+                      Icon(Icons.location_on, color: Colors.grey, size: 20.r),
+                      SizedBox(width: 10.w),
                       Text(
                         '123 Main St, Springfield, IL 62701',
                         style: TextStyle(
@@ -58,11 +58,11 @@ class MyDeliveriesMapScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Row(
                     children: [
-                      Icon(Icons.phone, color: Colors.grey),
-                      SizedBox(width: 10),
+                      Icon(Icons.phone, color: Colors.grey, size: 20.r),
+                      SizedBox(width: 10.w),
                       Text(
                         '+1 234 567 890',
                         style: TextStyle(
@@ -75,7 +75,7 @@ class MyDeliveriesMapScreen extends StatelessWidget {
                   SizedBox(height: 10.h),
                   _bottleCount(),
                   SizedBox(height: 20.h),
-                  CommonMapCard(),
+                  const CommonMapCard(),
                 ],
               ),
             ),
@@ -98,11 +98,11 @@ class MyDeliveriesMapScreen extends StatelessWidget {
         children: [
           Text(
             'Deliver 2 x 20L AquaRoute',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
           ),
           Text(
             'Premium Bottles',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
           ),
         ],
       ),

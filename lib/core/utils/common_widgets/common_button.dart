@@ -9,12 +9,13 @@ class CommonButton extends StatelessWidget {
   final Color? backgroundColor;
   final Gradient? gradient;
   final TextStyle? textStyle;
-  final IconData? icon;
+  final Icon? icon;
   final double? height;
   final double? width;
   final double borderRadius;
   final Color? outlineColor;
   final BoxConstraints? boxConstraints;
+  final bool isfullWidth;
 
   const CommonButton({
     super.key,
@@ -30,51 +31,52 @@ class CommonButton extends StatelessWidget {
     this.borderRadius = 10.0,
     this.outlineColor,
     this.boxConstraints,
+    this.isfullWidth = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width ?? double.infinity,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(borderRadius.r),
-          onTap: onTap,
-          child: Container(
-            padding:
-                padding ??
-                EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: gradient == null
-                  ? (backgroundColor ?? primaryColor)
-                  : null,
-              gradient: gradient,
-              borderRadius: BorderRadius.circular(borderRadius.r),
-              border: Border.all(color: outlineColor ?? Colors.transparent),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 20.sp, color: Colors.white),
-                  SizedBox(width: 6.w),
-                ],
-                Text(
-                  buttonValue,
-                  style:
-                      textStyle ??
-                      TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16.sp,
-                        color: Colors.white,
-                      ),
-                ),
-              ],
-            ),
+    final buttonChild = Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(borderRadius.r),
+        onTap: onTap,
+        child: Container(
+          padding:
+              padding ?? EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: gradient == null ? (backgroundColor ?? primaryColor) : null,
+            gradient: gradient,
+            borderRadius: BorderRadius.circular(borderRadius.r),
+            border: Border.all(color: outlineColor ?? Colors.transparent),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[icon!, SizedBox(width: 6.w)],
+              Text(
+                buttonValue,
+                style:
+                    textStyle ??
+                    TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16.sp,
+                      color: Colors.white,
+                    ),
+              ),
+            ],
           ),
         ),
       ),
     );
+
+    if (isfullWidth) {
+      return SizedBox(width: double.infinity, child: buttonChild);
+    } else if (width != null) {
+      return SizedBox(width: width, child: buttonChild);
+    } else {
+      return buttonChild;
+    }
   }
 }
