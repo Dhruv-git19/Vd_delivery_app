@@ -6,8 +6,12 @@ class OrdersResponse {
 
   factory OrdersResponse.fromJson(Map<String, dynamic> json) {
     return OrdersResponse(
-      orders: (json['orders'] as List?)?.map((e) => Order.fromJson(e)).toList() ?? [],
-      optimizedRoute: json['optimizedRoute'] != null ? OptimizedRoute.fromJson(json['optimizedRoute']) : null,
+      orders:
+          (json['orders'] as List?)?.map((e) => Order.fromJson(e)).toList() ??
+          [],
+      optimizedRoute: json['optimizedRoute'] != null
+          ? OptimizedRoute.fromJson(json['optimizedRoute'])
+          : null,
     );
   }
 }
@@ -16,13 +20,22 @@ class Order {
   final int id;
   final int userId;
   final String totalAmount;
-  final String status;
+    final String status;
   final String createdOn;
   final Cart? cart;
   final List<DeliveryPartner> deliveryPartners;
   final String type;
-  final String? address;
-  final String? distanceInfo;
+  final Address? address;
+  final DistanceInfo? distanceInfo;
+  final String? customerName;
+  final String? productIds;
+  final String? subscriptionType;
+  final String? startDate;
+  final String? endDate;
+  final dynamic deliveryDays; 
+  final dynamic deliveryDates; 
+  final UserDetails? userDetails;
+  final DeliveryPartnerDetails? deliveryPartnerDetails;
 
   Order({
     required this.id,
@@ -35,6 +48,15 @@ class Order {
     required this.type,
     this.address,
     this.distanceInfo,
+    this.customerName,
+    this.productIds,
+    this.subscriptionType,
+    this.startDate,
+    this.endDate,
+    this.deliveryDays,
+    this.deliveryDates,
+    this.userDetails,
+    this.deliveryPartnerDetails,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -42,13 +64,163 @@ class Order {
       id: json['id'],
       userId: json['userId'],
       totalAmount: json['totalAmount'] ?? '',
-      status: json['status'] ?? '',
+      status: json['status'] != null ? json['status'].toString() : '',
       createdOn: json['createdOn'] ?? '',
       cart: json['cart'] != null ? Cart.fromJson(json['cart']) : null,
-      deliveryPartners: (json['deliveryPartners'] as List?)?.map((e) => DeliveryPartner.fromJson(e)).toList() ?? [],
+      deliveryPartners:
+          (json['deliveryPartners'] as List?)
+              ?.map((e) => DeliveryPartner.fromJson(e))
+              .toList() ??
+          [],
       type: json['type'] ?? '',
-      address: json['address'],
-      distanceInfo: json['distanceInfo'],
+      address: json['address'] != null && json['address'] is Map
+          ? Address.fromJson(json['address'])
+          : null,
+      distanceInfo: json['distanceInfo'] != null && json['distanceInfo'] is Map
+          ? DistanceInfo.fromJson(json['distanceInfo'])
+          : null,
+      userDetails: json['userDetails'] != null && json['userDetails'] is Map
+          ? UserDetails.fromJson(json['userDetails'])
+          : null,
+      deliveryPartnerDetails:
+          json['deliveryPartnerDetails'] != null &&
+              json['deliveryPartnerDetails'] is Map
+          ? DeliveryPartnerDetails.fromJson(json['deliveryPartnerDetails'])
+          : null,
+
+      customerName: json['customerName'] ?? json['customer_name'] ?? null,
+      productIds: json['productIds'] ?? null,
+      subscriptionType: json['subscriptionType'] ?? null,
+      startDate: json['startDate'] ?? null,
+      endDate: json['endDate'] ?? null,
+      deliveryDays: json['deliveryDays'],
+      deliveryDates: json['deliveryDates'],
+    );
+  }
+}
+
+class Address {
+  final int? id;
+  final int? userId;
+  final String? fullAddress;
+  final String? city;
+  final String? state;
+  final String? country;
+  final String? latitude;
+  final String? longitude;
+  final String? postalCode;
+  final bool? isDefault;
+  final String? createdOn;
+  final dynamic createdBy;
+  final dynamic updatedOn;
+  final dynamic updatedBy;
+  final int? isDeleted;
+  final dynamic deletedOn;
+  final dynamic deletedBy;
+
+  Address({
+    this.id,
+    this.userId,
+    this.fullAddress,
+    this.city,
+    this.state,
+    this.country,
+    this.latitude,
+    this.longitude,
+    this.postalCode,
+    this.isDefault,
+    this.createdOn,
+    this.createdBy,
+    this.updatedOn,
+    this.updatedBy,
+    this.isDeleted,
+    this.deletedOn,
+    this.deletedBy,
+  });
+
+  factory Address.fromJson(Map<String, dynamic> json) {
+    return Address(
+      id: json['id'],
+      userId: json['userId'],
+      fullAddress: json['fullAddress'] ?? json['full_address'] ?? null,
+      city: json['city'] ?? null,
+      state: json['state'] ?? null,
+      country: json['country'] ?? null,
+      latitude: json['latitude']?.toString() ?? null,
+      longitude: json['longitude']?.toString() ?? null,
+      postalCode: json['postalCode'] ?? null,
+      isDefault: json['isDefault'] ?? null,
+      createdOn: json['createdOn'] ?? null,
+      createdBy: json['createdBy'] ?? json['createdby'] ?? null,
+      updatedOn: json['updatedOn'] ?? json['updatedon'] ?? null,
+      updatedBy: json['updatedBy'] ?? json['updatedby'] ?? null,
+      isDeleted: json['isDeleted'] ?? json['isdeleted'] ?? null,
+      deletedOn: json['deletedOn'] ?? json['deletedon'] ?? null,
+      deletedBy: json['deletedBy'] ?? json['deletedby'] ?? null,
+    );
+  }
+}
+
+class DistanceInfo {
+  final String? distance;
+  final String? duration;
+  final int? distanceValue;
+  final int? durationValue;
+
+  DistanceInfo({
+    this.distance,
+    this.duration,
+    this.distanceValue,
+    this.durationValue,
+  });
+
+  factory DistanceInfo.fromJson(Map<String, dynamic> json) {
+    return DistanceInfo(
+      distance: json['distance'] ?? null,
+      duration: json['duration'] ?? null,
+      distanceValue: json['distanceValue'] ?? null,
+      durationValue: json['durationValue'] ?? null,
+    );
+  }
+}
+
+class UserDetails {
+  final int? id;
+  final String? fullName;
+  final String? emailId;
+  final String? mobileNumber;
+
+  UserDetails({this.id, this.fullName, this.emailId, this.mobileNumber});
+
+  factory UserDetails.fromJson(Map<String, dynamic> json) {
+    return UserDetails(
+      id: json['id'],
+      fullName: json['full_name'] ?? json['fullName'] ?? null,
+      emailId: json['email_id'] ?? json['emailId'] ?? null,
+      mobileNumber: json['mobile_number'] ?? json['mobileNumber'] ?? null,
+    );
+  }
+}
+
+class DeliveryPartnerDetails {
+  final int? id;
+  final String? fullName;
+  final String? emailId;
+  final String? mobileNumber;
+
+  DeliveryPartnerDetails({
+    this.id,
+    this.fullName,
+    this.emailId,
+    this.mobileNumber,
+  });
+
+  factory DeliveryPartnerDetails.fromJson(Map<String, dynamic> json) {
+    return DeliveryPartnerDetails(
+      id: json['id'],
+      fullName: json['full_name'] ?? json['fullName'] ?? null,
+      emailId: json['email_id'] ?? json['emailId'] ?? null,
+      mobileNumber: json['mobile_number'] ?? json['mobileNumber'] ?? null,
     );
   }
 }
@@ -177,7 +349,8 @@ class Leg {
       endLocation: Location.fromJson(json['end_location']),
       startAddress: json['start_address'] ?? '',
       startLocation: Location.fromJson(json['start_location']),
-      steps: (json['steps'] as List?)?.map((e) => Step.fromJson(e)).toList() ?? [],
+      steps:
+          (json['steps'] as List?)?.map((e) => Step.fromJson(e)).toList() ?? [],
       trafficSpeedEntry: json['traffic_speed_entry'] ?? [],
       viaWaypoint: json['via_waypoint'] ?? [],
     );
@@ -191,10 +364,7 @@ class Distance {
   Distance({required this.text, required this.value});
 
   factory Distance.fromJson(Map<String, dynamic> json) {
-    return Distance(
-      text: json['text'] ?? '',
-      value: json['value'] ?? 0,
-    );
+    return Distance(text: json['text'] ?? '', value: json['value'] ?? 0);
   }
 }
 
@@ -205,10 +375,7 @@ class DurationValue {
   DurationValue({required this.text, required this.value});
 
   factory DurationValue.fromJson(Map<String, dynamic> json) {
-    return DurationValue(
-      text: json['text'] ?? '',
-      value: json['value'] ?? 0,
-    );
+    return DurationValue(text: json['text'] ?? '', value: json['value'] ?? 0);
   }
 }
 
