@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CommonAppbar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -41,7 +42,12 @@ class CommonAppbar extends StatelessWidget implements PreferredSizeWidget {
             )),
         ],
       ),
-      leading: Icon(Icons.keyboard_backspace),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () {
+          context.pop();
+        },
+      ),
       actions: [
         if (text != null)
           Container(
