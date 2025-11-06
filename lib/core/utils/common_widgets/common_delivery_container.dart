@@ -33,7 +33,7 @@ class CommonDeliveryContainer extends StatelessWidget {
       height: height ?? 145.h,
       width: width ?? double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: borderColor ?? Colors.white),
         color: Colors.white,
       ),
@@ -61,7 +61,7 @@ class CommonDeliveryContainer extends StatelessWidget {
               _coloredContainer(
                 'Delivered',
                 AllColors.primaryColor,
-                Color(0xFFE8FFF9),
+                const Color(0xFFE8FFF9),
               ),
             ],
           ),
@@ -89,9 +89,9 @@ class CommonDeliveryContainer extends StatelessWidget {
             children: [
               Text(
                 items,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color.fromARGB(255, 131, 131, 131),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color.fromARGB(255, 131, 131, 131),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -105,6 +105,7 @@ class CommonDeliveryContainer extends StatelessWidget {
                 child: Icon(
                   Icons.arrow_forward_ios_outlined,
                   color: Colors.white,
+                  size: 16.r,
                 ),
               ),
             ],
@@ -117,13 +118,13 @@ class CommonDeliveryContainer extends StatelessWidget {
   Widget _iconText(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 17, color: const Color.fromARGB(255, 102, 102, 102)),
+        Icon(icon, size: 17.r, color: const Color.fromARGB(255, 102, 102, 102)),
         SizedBox(width: 4.w),
         Text(
           text,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color.fromARGB(255, 134, 134, 134),
+          style: TextStyle(
+            fontSize: 12.sp,
+            color: const Color.fromARGB(255, 134, 134, 134),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -136,12 +137,12 @@ class CommonDeliveryContainer extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: contColor,
-        borderRadius: BorderRadius.circular(15.0),
+        borderRadius: BorderRadius.circular(15.r),
       ),
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 10.0,
+          fontSize: 10.sp,
           color: textcolor,
           fontWeight: FontWeight.bold,
         ),

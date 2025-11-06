@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
@@ -31,15 +32,22 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: AppColor.secondaryColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.fire_truck_outlined, size: 28, color: Colors.white),
-            SizedBox(height: 8),
-            Text("Vedasip Delivery", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+            Icon(Icons.fire_truck_outlined, size: 28.r, color: Colors.white),
+            SizedBox(height: 8.h),
+            Text(
+              "Vedasip Delivery",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),

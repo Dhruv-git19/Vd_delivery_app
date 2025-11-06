@@ -21,8 +21,8 @@ class OrderListView extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                blurRadius: 8.r,
+                offset: Offset(0, 2.h),
               ),
             ],
           ),
@@ -34,14 +34,13 @@ class OrderListView extends StatelessWidget {
                 children: [
                   Text(
                     order.userId.toString(),
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: 20.sp,
                       color: Color(0xFF222222),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(width: 8.w),
-                  // Add status chip if needed
                   const Spacer(),
                   Container(
                     padding: EdgeInsets.symmetric(
@@ -50,14 +49,14 @@ class OrderListView extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE6F0FF),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Text(
                       order.status,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Color(0xFF6A8EC9),
                         fontWeight: FontWeight.w600,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                       ),
                     ),
                   ),
@@ -66,8 +65,8 @@ class OrderListView extends StatelessWidget {
               SizedBox(height: 8.h),
               Text(
                 order.address?.toString() ?? 'unknown address',
-                style: const TextStyle(
-                  fontSize: 15,
+                style: TextStyle(
+                  fontSize: 15.sp,
                   color: Color(0xFF6C6C6C),
                   fontWeight: FontWeight.w500,
                 ),
@@ -77,44 +76,31 @@ class OrderListView extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.access_time_outlined,
-                    size: 18,
+                    size: 18.r,
                     color: Color(0xFFB0B0B0),
                   ),
                   SizedBox(width: 4.w),
                   Text(
                     '30 min',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6C6C6C),
-                    ),
+                    style: TextStyle(fontSize: 13.sp, color: Color(0xFF6C6C6C)),
                   ),
                   SizedBox(width: 16.w),
-                  Icon(
-                    Icons.navigation,
-                    size: 18,
-                    color: Color(0xFFB0B0B0),
-                  ),
+                  Icon(Icons.navigation, size: 18.r, color: Color(0xFFB0B0B0)),
                   SizedBox(width: 4.w),
                   Text(
                     '2.3 km',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6C6C6C),
-                    ),
+                    style: TextStyle(fontSize: 13.sp, color: Color(0xFF6C6C6C)),
                   ),
                   SizedBox(width: 16.w),
                   Icon(
                     Icons.currency_rupee,
-                    size: 18,
+                    size: 18.r,
                     color: Color(0xFFB0B0B0),
                   ),
                   SizedBox(width: 4.w),
                   Text(
                     order.totalAmount.toString(),
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6C6C6C),
-                    ),
+                    style: TextStyle(fontSize: 13.sp, color: Color(0xFF6C6C6C)),
                   ),
                 ],
               ),

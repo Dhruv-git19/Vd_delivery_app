@@ -87,8 +87,8 @@ class PaymentMethod extends StatelessWidget {
           'Ask the customer for payment via QR Code',
           style: TextStyle(
             fontSize: 10.sp,
-            fontWeight: FontWeight.bold,
-            color: AllColors.verifyheadingcolor,
+            fontWeight: FontWeight.w500,
+            color: AllColors.deliverydetailshadelight,
           ),
         ),
         SizedBox(height: 20.h),
@@ -101,20 +101,21 @@ class PaymentMethod extends StatelessWidget {
                 Text(
                   'Show This QR Code',
                   style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
                     color: Colors.grey,
                   ),
                 ),
-                SizedBox(height: 20.h),
-                Icon(Icons.qr_code, color: Colors.black, size: 70),
-                SizedBox(height: 20.h),
+                SizedBox(height: 10.h),
+                Icon(Icons.qr_code_2, color: Colors.black, size: 110.r),
+                SizedBox(height: 10.h),
                 CommonButton(
+                  isfullWidth: true,
                   buttonValue: 'Confirm Delivery',
                   onTap: () {},
                   padding: EdgeInsets.all(8.r),
                 ),
-                SizedBox(height: 20.h),
+                SizedBox(height: 15.h),
               ],
             ),
           ),
@@ -132,7 +133,7 @@ class PaymentMethod2 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(height: 10),
+        SizedBox(height: 10.h),
         CommonIconBackgCont(
           icon: Icon(Icons.qr_code, color: AllColors.primaryColor),
           backgroundColor: AllColors.textfieldColor,
@@ -140,40 +141,45 @@ class PaymentMethod2 extends StatelessWidget {
         Text(
           'QR Code',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 14.sp,
             fontWeight: FontWeight.bold,
             color: AllColors.verifyheadingcolor,
           ),
         ),
-        SizedBox(height: 5),
+        SizedBox(height: 5.h),
         Text(
           'Ask the customer for payment via QR Code',
           style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            color: AllColors.verifyheadingcolor,
+            fontSize: 10.sp,
+            fontWeight: FontWeight.w500,
+            color: AllColors.deliverydetailshadelight,
           ),
         ),
-        SizedBox(height: 20),
+        SizedBox(height: 20.h),
         CommonDottedBox(
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.0.r),
             child: Column(
               children: [
-                SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 Text(
                   'Show This QR Code',
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
                     color: Colors.grey,
                   ),
                 ),
-                SizedBox(height: 20),
-                Icon(Icons.qr_code, color: Colors.black, size: 70),
-                SizedBox(height: 20),
-                CommonButton(buttonValue: 'Confirm Delivery', onTap: () {}),
-                SizedBox(height: 20),
+                SizedBox(height: 10.h),
+                Icon(Icons.qr_code_2, color: Colors.black, size: 110.r),
+                SizedBox(height: 10.h),
+                CommonButton(
+                  isfullWidth: true,
+                  buttonValue: 'Confirm Delivery',
+                  onTap: () {},
+                  padding: EdgeInsets.all(8.r),
+                ),
+                SizedBox(height: 15.h),
               ],
             ),
           ),

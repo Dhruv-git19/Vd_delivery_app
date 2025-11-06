@@ -6,8 +6,15 @@ import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dropdownme
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_container.dart';
 
-class DeliveriesListScreen extends StatelessWidget {
+class DeliveriesListScreen extends StatefulWidget {
   const DeliveriesListScreen({super.key});
+
+  @override
+  State<DeliveriesListScreen> createState() => _DeliveriesListScreenState();
+}
+
+class _DeliveriesListScreenState extends State<DeliveriesListScreen> {
+  String? selectedDoc;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +22,7 @@ class DeliveriesListScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: CommonAppbar(title: 'My Deliveries'),
       body: Padding(
-        padding: EdgeInsets.all(8.0.r),
+        padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
         child: Column(
           children: [
             CommonTextfield(
@@ -23,15 +30,39 @@ class DeliveriesListScreen extends StatelessWidget {
               fillColor: Colors.transparent,
               borderColor: Colors.grey.shade300,
             ),
-            SizedBox(height: 16.h),
+
+            SizedBox(height: 12.h),
+
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                CommonDropdown(text: 'Delivery Status'),
-                CommonDropdown(text: 'Time Slot'),
+                CommonDropdownmenu(
+                  title: "Delivery Status",
+                  items: ["Delivered", "Pending", "Cancelled"],
+                  value: selectedDoc,
+                  onChanged: (val) {
+                    setState(() {
+                      selectedDoc = val;
+                    });
+                  },
+                ),
+                SizedBox(width: 20.w),
+
+                CommonDropdownmenu(
+                  title: "Time Slot",
+                  items: ["Today", "This Week", "This Month"],
+                  value: selectedDoc,
+                  onChanged: (val) {
+                    setState(() {
+                      selectedDoc = val;
+                    });
+                  },
+                ),
               ],
             ),
-            SizedBox(height: 16.h),
+
+            SizedBox(height: 15.h),
+
             Expanded(
               child: ListView.builder(
                 itemCount: infoList.length,
@@ -39,18 +70,14 @@ class DeliveriesListScreen extends StatelessWidget {
                   final info = infoList[index];
                   return Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: CommonDeliveryContainer(
-                          name: info['name'] ?? '',
-                          location: info['location'] ?? '',
-                          time: info['time'] ?? '',
-                          distance: info['distance'] ?? '',
-                          price: info['price'] ?? '',
-                          items: '${info['items'] ?? ''} items',
-
-                          borderColor: Colors.grey.shade300,
-                        ),
+                      CommonDeliveryContainer(
+                        name: info['name'] ?? '',
+                        location: info['location'] ?? '',
+                        time: info['time'] ?? '',
+                        distance: info['distance'] ?? '',
+                        price: info['price'] ?? '',
+                        items: '${info['items'] ?? ''} items',
+                        borderColor: Colors.grey.shade300,
                       ),
                       SizedBox(height: 8.h),
                     ],

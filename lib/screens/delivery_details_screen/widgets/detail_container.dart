@@ -27,7 +27,7 @@ class DetailContainer extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(),
+              const CircleAvatar(),
               SizedBox(width: 10.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,20 +49,20 @@ class DetailContainer extends StatelessWidget {
                   ),
                 ],
               ),
-              Spacer(),
+              const Spacer(),
               CommonIconBackgCont(
                 icon: Icon(Icons.call, color: primaryColor),
-                backgroundColor: Color(0xFFF3F4F6),
+                backgroundColor: const Color(0xFFF3F4F6),
               ),
               SizedBox(width: 5.w),
               CommonIconBackgCont(
                 icon: Icon(Icons.message_outlined, color: primaryColor),
-                backgroundColor: Color(0xFFF3F4F6),
+                backgroundColor: const Color(0xFFF3F4F6),
               ),
             ],
           ),
           SizedBox(height: 7.h),
-          Divider(indent: 20, endIndent: 20, color: Colors.grey[100]),
+          Divider(indent: 20.w, endIndent: 20.w, color: Colors.grey[100]),
           SizedBox(height: 7.h),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,9 +70,9 @@ class DetailContainer extends StatelessWidget {
               Icon(
                 Icons.location_on_outlined,
                 color: Colors.grey[600],
-                size: 30,
+                size: 30.r,
               ),
-              SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -89,7 +89,7 @@ class DetailContainer extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF6E6E6E),
+                      color: const Color(0xFF6E6E6E),
                     ),
                   ),
                 ],
@@ -98,7 +98,7 @@ class DetailContainer extends StatelessWidget {
           ),
           SizedBox(height: 7.h),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.r),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -122,7 +122,7 @@ Widget _customicon(IconData icon, String descrip1, String descrip2) {
         descrip1,
         style: TextStyle(
           fontSize: 12.sp,
-          color: Color(0xFF6E6E6E),
+          color: const Color(0xFF6E6E6E),
           fontWeight: FontWeight.w400,
         ),
       ),
@@ -131,7 +131,7 @@ Widget _customicon(IconData icon, String descrip1, String descrip2) {
         descrip2,
         style: TextStyle(
           fontSize: 14.sp,
-          color: Color(0xFF6E6E6E),
+          color: const Color(0xFF6E6E6E),
           fontWeight: FontWeight.w600,
         ),
       ),

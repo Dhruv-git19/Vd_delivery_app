@@ -16,16 +16,13 @@ class HomeScreenShimmer extends StatelessWidget {
           child: Container(
             height: 200.h,
             width: double.infinity,
-            margin: const EdgeInsets.symmetric(vertical: 6),
+            margin: EdgeInsets.symmetric(vertical: 6.h),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
               border: Border.all(color: Colors.white),
               color: Colors.white,
             ),
-            padding: EdgeInsets.symmetric(
-              horizontal: 12.w,
-              vertical: 8.h,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

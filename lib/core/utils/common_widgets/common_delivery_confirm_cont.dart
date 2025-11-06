@@ -19,17 +19,17 @@ class DeliveryConfirmCont extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(7),
+      padding: EdgeInsets.all(7.r),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: const Color.fromARGB(255, 204, 204, 204)),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              CircleAvatar(),
+              const CircleAvatar(),
               SizedBox(width: 10.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,18 +51,17 @@ class DeliveryConfirmCont extends StatelessWidget {
                   ),
                 ],
               ),
-              Spacer(),
+              const Spacer(),
               Column(
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.currency_rupee_rounded, size: 15.sp),
-
+                      Icon(Icons.currency_rupee_rounded, size: 15.r),
                       Text(
                         rupee,
                         style: TextStyle(
                           fontSize: 16.sp,
-                          color: Color(0xFF4F5A69),
+                          color: const Color(0xFF4F5A69),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -79,16 +78,15 @@ class DeliveryConfirmCont extends StatelessWidget {
               ),
             ],
           ),
-
-          SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Row(
             children: [
               Icon(
                 Icons.shopping_bag_outlined,
                 color: AllColors.deliverydetailshadelight,
-                size: 22.sp,
+                size: 22.r,
               ),
-              SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

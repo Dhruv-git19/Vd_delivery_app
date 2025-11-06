@@ -9,7 +9,7 @@ class ProductImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(6.r),
       child: SizedBox(
         width: 34.w,
         height: 34.h,

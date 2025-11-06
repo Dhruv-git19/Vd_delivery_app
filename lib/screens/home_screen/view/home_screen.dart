@@ -34,15 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
       drawer: Drawer(
         backgroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
-            topRight: Radius.circular(32),
-            bottomRight: Radius.circular(32),
+            topRight: Radius.circular(32.r),
+            bottomRight: Radius.circular(32.r),
           ),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () => Navigator.pop(context),
                 ),
 
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
 
                 Center(
                   child: Stack(
@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: Icon(
                             Icons.edit,
-                            size: 18,
+                            size: 18.r,
                             color: primaryColor,
                           ),
                         ),
@@ -139,9 +139,9 @@ class _HomeScreenState extends State<HomeScreen> {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(12),
-                    bottomRight: Radius.circular(12),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(12.r),
+                    bottomRight: Radius.circular(12.r),
                   ),
                   gradient: LinearGradient(
                     colors: [primaryColor, secondaryColor],
@@ -161,10 +161,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Builder(
                               builder: (context) => IconButton(
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.menu,
                                   color: Colors.white,
-                                  size: 26,
+                                  size: 26.r,
                                 ),
                                 onPressed: () =>
                                     Scaffold.of(context).openDrawer(),
