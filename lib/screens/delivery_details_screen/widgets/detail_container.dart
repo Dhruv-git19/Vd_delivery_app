@@ -7,11 +7,17 @@ class DetailContainer extends StatelessWidget {
   final String name;
   final String customerType;
   final String address;
+  final String distance;
+  final String duration;
+  final String amount;
   const DetailContainer({
     super.key,
     required this.name,
     required this.customerType,
     required this.address,
+    required this.distance,
+    required this.duration,
+    required this.amount,
   });
 
   @override
@@ -29,27 +35,23 @@ class DetailContainer extends StatelessWidget {
             children: [
               CircleAvatar(),
               SizedBox(width: 10.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AllColors.deliverydetailfontColor,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AllColors.deliverydetailfontColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Text(
-                    customerType,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: AllColors.deliverydetailfontColor,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              Spacer(),
               CommonIconBackgCont(
                 icon: Icon(Icons.call, color: primaryColor),
                 backgroundColor: Color(0xFFF3F4F6),
@@ -73,26 +75,30 @@ class DetailContainer extends StatelessWidget {
                 size: 30,
               ),
               SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Delivery Address',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AllColors.deliverydetailfontColor,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Delivery Address',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AllColors.deliverydetailfontColor,
+                      ),
                     ),
-                  ),
-                  Text(
-                    address,
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF6E6E6E),
+                    Text(
+                      address,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF6E6E6E),
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -102,8 +108,16 @@ class DetailContainer extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                _customicon(Icons.telegram_outlined, 'Distance', '2.3 Km'),
-                _customicon(Icons.currency_rupee, 'Amount', '80.00'),
+                Expanded(
+                  child: _customicon(
+                    Icons.telegram_outlined,
+                    'Distance',
+                    distance,
+                  ),
+                ),
+                Expanded(
+                  child: _customicon(Icons.currency_rupee, 'Amount', amount),
+                ),
               ],
             ),
           ),
@@ -118,24 +132,29 @@ Widget _customicon(IconData icon, String descrip1, String descrip2) {
     children: [
       Icon(icon, size: 20.r, color: Color(0xFF6E6E6E)),
       SizedBox(width: 3.w),
-      Text(
-        descrip1,
-        style: TextStyle(
-          fontSize: 12.sp,
-          color: Color(0xFF6E6E6E),
-          fontWeight: FontWeight.w400,
+      Flexible(
+        child: Text(
+          descrip1,
+          style: TextStyle(
+            fontSize: 12.sp,
+            color: Color(0xFF6E6E6E),
+            fontWeight: FontWeight.w400,
+          ),
+          overflow: TextOverflow.ellipsis,
         ),
       ),
       SizedBox(width: 7.w),
-      Text(
-        descrip2,
-        style: TextStyle(
-          fontSize: 14.sp,
-          color: Color(0xFF6E6E6E),
-          fontWeight: FontWeight.w600,
+      Flexible(
+        child: Text(
+          descrip2,
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: Color(0xFF6E6E6E),
+            fontWeight: FontWeight.w600,
+          ),
+          overflow: TextOverflow.ellipsis,
         ),
       ),
-      SizedBox(width: 30.w),
     ],
   );
 }

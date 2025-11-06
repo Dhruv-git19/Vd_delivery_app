@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:vedasip_delivery_app/models/filter_model.dart';
 import 'package:vedasip_delivery_app/constants/api_endpoints.dart';
 import 'package:vedasip_delivery_app/services/api_error_handler.dart';
 import 'package:vedasip_delivery_app/interceptor/dio_interceptor.dart';
@@ -84,8 +83,7 @@ class DioHttp {
     );
   }
 
-  Future<Response> getSpecificOrdersAssignment(
-    BuildContext context) async {
+  Future<Response> getSpecificOrdersAssignment(BuildContext context) async {
     return _postRequest(
       context: context,
       endpoint: ApiEndpoint.getSpecificOrdersAssignment,
@@ -93,8 +91,29 @@ class DioHttp {
       wrapData: true,
     );
   }
-  Future<Response> getSpecificUser(
-    BuildContext context) async {
+
+  Future<Response> getSpecificOrderDetails(
+    BuildContext context, {
+    required int orderId,
+    required String type,
+    Map<String, dynamic>? warehouseLocation,
+  }) async {
+    final data = {
+      'orderId': orderId,
+      'type': type,
+      'warehouseLocation':
+          warehouseLocation ?? {'lat': 28.6139, 'lng': 77.2090},
+    };
+
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.getSpecificOrderDetails,
+      data: data,
+      wrapData: true,
+    );
+  }
+
+  Future<Response> getSpecificUser(BuildContext context) async {
     return _postRequest(
       context: context,
       endpoint: ApiEndpoint.getSpecificUser,

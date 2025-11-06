@@ -13,6 +13,7 @@ class HomeProvider with ChangeNotifier {
 
   Future<void> fetchData(BuildContext context) async {
     isLoading = true;
+    orders = [];
     notifyListeners();
     try {
       final ordersResponse = await _dioHttp.getSpecificOrdersAssignment(
@@ -66,6 +67,7 @@ class HomeProvider with ChangeNotifier {
       isLoading = false;
       notifyListeners();
     } catch (e) {
+      orders = [];
       isLoading = false;
       notifyListeners();
     }

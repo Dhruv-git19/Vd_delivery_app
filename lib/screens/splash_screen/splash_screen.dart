@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
@@ -20,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkTokenAndRedirect() async {
     final token = await MySecureStorage().readToken();
+    log('token $token');
     await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
     if (token != null && token.isNotEmpty) {
