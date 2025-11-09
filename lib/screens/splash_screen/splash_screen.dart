@@ -44,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Icon(Icons.fire_truck_outlined, size: 28.r, color: Colors.white),
             SizedBox(height: 8.h),
             Text(
-              "Vedasip Delivery",
+              "Veedasip Delivery",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24.sp,
