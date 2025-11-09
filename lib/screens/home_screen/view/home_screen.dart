@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Expanded(
                                 child: Consumer<HomeProvider>(
                                   builder: (_, provider, __) => Text(
-                                    "Welcome ${provider.user?.fullName ?? 'Joe Doe'}",
+                                    "Welcome ${provider.user?.fullName ?? ''}",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 20.sp,

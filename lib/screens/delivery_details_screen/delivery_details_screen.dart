@@ -4,9 +4,14 @@ import 'package:provider/provider.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/provider/delivery_details_provider.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/widgets/detail_container.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/widgets/s3_network_image.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
+import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 
 class DeliveryDetailsScreen extends StatefulWidget {
   final int? orderId;
@@ -19,6 +24,8 @@ class DeliveryDetailsScreen extends StatefulWidget {
 }
 
 class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
+  bool _isLaunchingMap = false;
+  bool _isCheckingArrival = false;
   @override
   void initState() {
     super.initState();
@@ -281,12 +288,22 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
                     ),
                   ),
                   SizedBox(height: 20.h),
-                  CommonButton(buttonValue: 'Arrived at Destination'),
+                  CommonButton(
+                    buttonValue: 'Arrived at Destination',
+                    isfullWidth: true,
+                    isLoading: _isCheckingArrival,
+                    onTap: _isCheckingArrival
+                        ? null
+                        : () => _checkArrivalAndNavigate(context),
+                  ),
                   SizedBox(height: 10.h),
                   CommonButton(
                     buttonValue: 'Go to map',
+                    onTap: _isLaunchingMap ? null : () => _openMaps(context),
+                    isLoading: _isLaunchingMap,
                     backgroundColor: Colors.white,
                     outlineColor: primaryColor,
+                    isfullWidth: true,
                     textStyle: TextStyle(
                       color: primaryColor,
                       fontWeight: FontWeight.bold,
@@ -297,5 +314,192 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
               ),
             ),
     );
+  }
+
+  Future<void> _openMaps(BuildContext context) async {
+    setState(() {
+      _isLaunchingMap = true;
+    });
+
+    try {
+      final provider = Provider.of<DeliveryDetailsProvider>(
+        context,
+        listen: false,
+      );
+      final details = provider.details;
+
+      final destLat = details?['address']?['latitude'];
+      final destLng = details?['address']?['longitude'];
+
+      if (destLat == null || destLng == null) {
+        MySnackBar.showSnackBar(
+          context,
+          'Destination coordinates not available',
+        );
+        return;
+      }
+
+      // Check permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      // If permission denied forever or still denied - open maps with destination only (maps will use current location)
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        final uri = Uri.parse(
+          'https://www.google.com/maps/dir/?api=1&destination=$destLat,$destLng&travelmode=driving',
+        );
+        await _launchUriFallback(context, uri);
+        return;
+      }
+
+      // Get current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      final originLat = position.latitude;
+      final originLng = position.longitude;
+
+      final uri = Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&origin=$originLat,$originLng&destination=$destLat,$destLng&travelmode=driving',
+      );
+
+      await _launchUriFallback(context, uri);
+    } catch (e) {
+      // On any error, fallback to opening maps with destination only
+      try {
+        final provider = Provider.of<DeliveryDetailsProvider>(
+          context,
+          listen: false,
+        );
+        final details = provider.details;
+        final destLat = details?['address']?['latitude'];
+        final destLng = details?['address']?['longitude'];
+        if (destLat != null && destLng != null) {
+          final uri = Uri.parse(
+            'https://www.google.com/maps/dir/?api=1&destination=$destLat,$destLng&travelmode=driving',
+          );
+          await _launchUriFallback(context, uri);
+        } else {
+          MySnackBar.showSnackBar(context, 'Unable to open maps');
+        }
+      } catch (_) {
+        MySnackBar.showSnackBar(context, 'Unable to open maps');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLaunchingMap = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _launchUriFallback(BuildContext context, Uri uri) async {
+    // Try to open with external application (Google Maps app) else open browser
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        // fallback to in-app browser
+        if (!await launchUrl(uri, mode: LaunchMode.platformDefault)) {
+          MySnackBar.showSnackBar(context, 'Could not open maps');
+        }
+      }
+    } catch (_) {
+      MySnackBar.showSnackBar(context, 'Could not open maps');
+    }
+  }
+
+  Future<void> _checkArrivalAndNavigate(BuildContext context) async {
+    setState(() {
+      _isCheckingArrival = true;
+    });
+
+    try {
+      final provider = Provider.of<DeliveryDetailsProvider>(
+        context,
+        listen: false,
+      );
+      final details = provider.details;
+
+      final rawLat = details?['address']?['latitude'];
+      final rawLng = details?['address']?['longitude'];
+
+      double? destLat;
+      double? destLng;
+
+      if (rawLat is String) {
+        destLat = double.tryParse(rawLat);
+      } else if (rawLat is num) {
+        destLat = rawLat.toDouble();
+      }
+
+      if (rawLng is String) {
+        destLng = double.tryParse(rawLng);
+      } else if (rawLng is num) {
+        destLng = rawLng.toDouble();
+      }
+
+      if (destLat == null || destLng == null) {
+        MySnackBar.showSnackBar(
+          context,
+          'Destination coordinates not available',
+        );
+        return;
+      }
+
+      // Check permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        MySnackBar.showSnackBar(
+          context,
+          'Location permission denied. Please enable location to confirm arrival.',
+        );
+        return;
+      }
+
+      // Get current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      final originLat = position.latitude;
+      final originLng = position.longitude;
+
+      // Calculate distance in meters
+      final distanceInMeters = Geolocator.distanceBetween(
+        originLat,
+        originLng,
+        destLat,
+        destLng,
+      );
+
+      if (distanceInMeters <= 100) {
+        // within 100 meters -> navigate to confirm screen with extras
+        context.push(
+          AppRoutes.confirmDeliveryScreen,
+          extra: {'id': widget.orderId, 'type': widget.type},
+        );
+      } else {
+        MySnackBar.showSnackBar(
+          context,
+          'Please reach the delivery location to confirm.',
+        );
+      }
+    } catch (e) {
+      MySnackBar.showSnackBar(context, 'Error checking location: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCheckingArrival = false;
+        });
+      }
+    }
   }
 }
