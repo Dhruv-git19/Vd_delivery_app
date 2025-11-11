@@ -9,7 +9,6 @@ import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_c
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/provider/delivery_details_provider.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
 
@@ -29,8 +28,6 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
   final List<XFile> _images = [];
 
   Future<void> _takePhoto() async {
-    final ok = await _requestCameraPermission();
-    if (!ok) return;
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
@@ -42,15 +39,15 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Unable to open camera: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Unable to open camera: $e')));
+      }
     }
   }
 
   Future<void> _pickFromGallery() async {
-    final ok = await _requestGalleryPermission();
-    if (!ok) return;
     try {
       final List<XFile>? photos = await _picker.pickMultiImage(
         imageQuality: 80,
@@ -61,76 +58,11 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Unable to open gallery: $e')));
-    }
-  }
-
-  Future<bool> _requestCameraPermission() async {
-    final status = await Permission.camera.request();
-    if (status.isGranted) return true;
-    if (status.isPermanentlyDenied) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Camera permission permanently denied. Please enable it from settings.',
-          ),
-        ),
-      );
-      await openAppSettings();
-      return false;
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Camera permission is required to take photos.'),
-      ),
-    );
-    return false;
-  }
-
-  Future<bool> _requestGalleryPermission() async {
-    // On iOS use photos, on Android use storage / photos depending on SDK
-    if (Platform.isIOS) {
-      final status = await Permission.photos.request();
-      if (status.isGranted) return true;
-      if (status.isPermanentlyDenied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Photos permission permanently denied. Please enable it from settings.',
-            ),
-          ),
-        );
-        await openAppSettings();
-        return false;
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Unable to open gallery: $e')));
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Photos permission is required to pick images.'),
-        ),
-      );
-      return false;
-    } else {
-      final status = await Permission.storage.request();
-      if (status.isGranted) return true;
-      if (status.isPermanentlyDenied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Storage permission permanently denied. Please enable it from settings.',
-            ),
-          ),
-        );
-        await openAppSettings();
-        return false;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Storage permission is required to pick images.'),
-        ),
-      );
-      return false;
     }
   }
 

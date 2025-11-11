@@ -7,8 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.vedasip_delivery_app"
-    // Use an explicit compileSdk to avoid plugin compilation issues
-    compileSdk = 33
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -25,9 +24,8 @@ android {
         applicationId = "com.example.vedasip_delivery_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-    minSdk = flutter.minSdkVersion
-    // Use explicit targetSdk to match compileSdk and modern plugins
-    targetSdk = 33
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

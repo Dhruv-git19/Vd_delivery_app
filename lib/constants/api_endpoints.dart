@@ -4,6 +4,7 @@ enum ApiEndpoint {
   logout('/logout'),
   verifyOTP('/verifyOTP'),
   getSpecificUser('/getSpecificUser'),
+  uploadProofImages('/uploadProofImages'),
   getSpecificOrderDetails('/getSpecificOrderDetails'),
   getSpecificOrdersAssignment('/getSpecificOrdersAssignment');
  

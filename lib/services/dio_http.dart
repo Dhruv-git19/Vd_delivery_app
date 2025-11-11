@@ -41,10 +41,7 @@ class DioHttp {
       return response;
     } on DioException catch (err) {
       if (err.response?.statusCode == 401 || err.response?.statusCode == 403) {
-        await DioHttp().logout(context);
         await _secureStorage.deleteToken();
-        await _secureStorage.deleteRole();
-        await _secureStorage.deleteDoNotShowOMRTutorial();
         MySnackBar.showSnackBar(
           context,
           "Session expired. Please login again.",
