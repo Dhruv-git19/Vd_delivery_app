@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
+// removed unused import
 
 class CommonButton extends StatelessWidget {
   final String buttonValue;
@@ -16,6 +17,8 @@ class CommonButton extends StatelessWidget {
   final Color? outlineColor;
   final BoxConstraints? boxConstraints;
   final bool isfullWidth;
+  final bool isLoading;
+  final Color? loaderColor;
 
   const CommonButton({
     super.key,
@@ -32,6 +35,8 @@ class CommonButton extends StatelessWidget {
     this.outlineColor,
     this.boxConstraints,
     this.isfullWidth = false,
+    this.isLoading = false,
+    this.loaderColor,
   });
 
   @override
@@ -50,23 +55,39 @@ class CommonButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius.r),
             border: Border.all(color: outlineColor ?? Colors.transparent),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[icon!, SizedBox(width: 6.w)],
-              Text(
-                buttonValue,
-                style:
-                    textStyle ??
-                    TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16.sp,
-                      color: Colors.white,
+          child: isLoading
+              ? Center(
+                  child: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color:
+                          loaderColor ??
+                          textStyle?.color ??
+                          (backgroundColor == Colors.white
+                              ? primaryColor
+                              : Colors.white),
                     ),
-              ),
-            ],
-          ),
+                  ),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (icon != null) ...[icon!, SizedBox(width: 6.w)],
+                    Text(
+                      buttonValue,
+                      style:
+                          textStyle ??
+                          TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16.sp,
+                            color: Colors.white,
+                          ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );

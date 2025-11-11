@@ -5,57 +5,234 @@ import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dar
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_icon_backg_cont.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
-import 'package:vedasip_delivery_app/screens/confirm_delivery%20screen/widgets/common_confirmation_tabbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_confirm_cont.dart';
+import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:vedasip_delivery_app/screens/delivery_details_screen/provider/delivery_details_provider.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
 
-class ConfirmDeliveryScreen extends StatelessWidget {
-  const ConfirmDeliveryScreen({super.key});
+class ConfirmDeliveryScreen extends StatefulWidget {
+  final int? orderId;
+  final String? type;
+
+  const ConfirmDeliveryScreen({super.key, this.orderId, this.type});
+
+  @override
+  State<ConfirmDeliveryScreen> createState() => _ConfirmDeliveryScreenState();
+}
+
+class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
+  late final DeliveryDetailsProvider _provider;
+  final ImagePicker _picker = ImagePicker();
+  final List<XFile> _images = [];
+
+  Future<void> _takePhoto() async {
+    final ok = await _requestCameraPermission();
+    if (!ok) return;
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+      );
+      if (photo != null) {
+        setState(() {
+          _images.add(photo);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to open camera: $e')));
+    }
+  }
+
+  Future<void> _pickFromGallery() async {
+    final ok = await _requestGalleryPermission();
+    if (!ok) return;
+    try {
+      final List<XFile>? photos = await _picker.pickMultiImage(
+        imageQuality: 80,
+      );
+      if (photos != null && photos.isNotEmpty) {
+        setState(() {
+          _images.addAll(photos);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to open gallery: $e')));
+    }
+  }
+
+  Future<bool> _requestCameraPermission() async {
+    final status = await Permission.camera.request();
+    if (status.isGranted) return true;
+    if (status.isPermanentlyDenied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Camera permission permanently denied. Please enable it from settings.',
+          ),
+        ),
+      );
+      await openAppSettings();
+      return false;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Camera permission is required to take photos.'),
+      ),
+    );
+    return false;
+  }
+
+  Future<bool> _requestGalleryPermission() async {
+    // On iOS use photos, on Android use storage / photos depending on SDK
+    if (Platform.isIOS) {
+      final status = await Permission.photos.request();
+      if (status.isGranted) return true;
+      if (status.isPermanentlyDenied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Photos permission permanently denied. Please enable it from settings.',
+            ),
+          ),
+        );
+        await openAppSettings();
+        return false;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Photos permission is required to pick images.'),
+        ),
+      );
+      return false;
+    } else {
+      final status = await Permission.storage.request();
+      if (status.isGranted) return true;
+      if (status.isPermanentlyDenied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Storage permission permanently denied. Please enable it from settings.',
+            ),
+          ),
+        );
+        await openAppSettings();
+        return false;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Storage permission is required to pick images.'),
+        ),
+      );
+      return false;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _provider = DeliveryDetailsProvider();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.orderId != null) {
+        _provider.fetchOrderDetails(
+          context,
+          orderId: widget.orderId!,
+          type: widget.type ?? 'cart',
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _provider.dispose();
+    super.dispose();
+  }
+
+  String _getCustomerName(Map<String, dynamic>? details) {
+    return details?['customer']?['fullName'] ?? '---';
+  }
+
+  String _getCustomerAddress(Map<String, dynamic>? details) {
+    return details?['address']?['fullAddress'] ?? '---';
+  }
+
+  String _getTotalAmount(Map<String, dynamic>? details) {
+    return details?['totalAmount']?.toString() ?? '0.00';
+  }
+
+  String _getOrderType(Map<String, dynamic>? details) {
+    return details?['type']?.toString() ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CommonAppbar(
-        title: 'Confirm Delivery',
-        text: 'Awaiting Confirmation',
-        code: '#DEL001',
-      ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        padding: EdgeInsets.all(8.0.r),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              verificationColor,
-              const Color.fromARGB(255, 218, 247, 239),
-            ],
-            begin: AlignmentDirectional.topCenter,
-            end: AlignmentDirectional.bottomCenter,
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(8.0.r),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                DeliveryConfirmCont(
-                  name: 'Emma',
-                  address: '14, powder Gali , Mumbai',
-                  rupee: '80.00',
-                  items: '2 items',
-                ),
+    return ChangeNotifierProvider<DeliveryDetailsProvider>.value(
+      value: _provider,
+      child: Consumer<DeliveryDetailsProvider>(
+        builder: (context, provider, _) {
+          final details = provider.details;
+          final name = _getCustomerName(details);
+          final address = _getCustomerAddress(details);
+          final amount = _getTotalAmount(details);
 
-                SizedBox(height: 20.h),
-                _confirmationContainer(),
-                SizedBox(height: 20.h),
-                _EmptyBottleContainer(),
-                SizedBox(height: 20.h),
-                _confirmationContainer(),
-              ],
+          return Scaffold(
+            appBar: CommonAppbar(
+              title: 'Confirm Delivery',
+              text: 'Awaiting Confirmation',
+              code: '#DEL${widget.orderId ?? ''}',
             ),
-          ),
-        ),
+            body: Container(
+              width: double.infinity,
+              height: double.infinity,
+              padding: EdgeInsets.all(8.0.r),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    verificationColor,
+                    const Color.fromARGB(255, 218, 247, 239),
+                  ],
+                  begin: AlignmentDirectional.topCenter,
+                  end: AlignmentDirectional.bottomCenter,
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(8.0.r),
+                child: provider.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            DeliveryConfirmCont(
+                              name: name,
+                              address: address,
+                              rupee: amount,
+                              items:
+                                  '${details?['cart']?['cartDetails']?.length ?? 0} items',
+                            ),
+
+                            SizedBox(height: 20.h),
+                            _confirmationContainer(),
+                            SizedBox(height: 20.h),
+                            // Show empty bottle section only for subscription orders
+                            if (_getOrderType(details).toLowerCase() ==
+                                'subscription') ...[
+                              _EmptyBottleContainer(),
+                              SizedBox(height: 20.h),
+                            ],
+                          ],
+                        ),
+                      ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -122,17 +299,69 @@ class ConfirmDeliveryScreen extends StatelessWidget {
             width: double.infinity,
             child: Column(
               children: [
-                Icon(
-                  Icons.camera_alt_outlined,
-                  size: 35.sp,
-                  color: Colors.grey,
-                ),
-                SizedBox(height: 10.h),
-                Text(
-                  'No  photo captured yest',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-                ),
-                SizedBox(height: 19.h),
+                // Show selected images (camera or gallery)
+                if (_images.isNotEmpty) ...[
+                  SizedBox(
+                    height: 90.h,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _images.length,
+                      separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                      itemBuilder: (context, i) {
+                        final xfile = _images[i];
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8.r),
+                              child: Image.file(
+                                File(xfile.path),
+                                width: 120.w,
+                                height: 80.h,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              top: -6,
+                              right: -6,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() => _images.removeAt(i));
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.black.withOpacity(0.6),
+                                  ),
+                                  padding: EdgeInsets.all(4.r),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 16.r,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                ] else ...[
+                  Icon(
+                    Icons.camera_alt_outlined,
+                    size: 35.sp,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 10.h),
+                  Text(
+                    'No photo captured yet',
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 12.h),
+                ],
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -141,6 +370,7 @@ class ConfirmDeliveryScreen extends StatelessWidget {
                       child: CommonButton(
                         isfullWidth: false,
                         buttonValue: 'Take Photo',
+                        onTap: () async => await _takePhoto(),
                         textStyle: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 10.sp,
@@ -180,6 +410,7 @@ class ConfirmDeliveryScreen extends StatelessWidget {
                           vertical: 5.h,
                           horizontal: 2.h,
                         ),
+                        onTap: () async => await _pickFromGallery(),
                       ),
                     ),
                     SizedBox(width: 5.w),

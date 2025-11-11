@@ -48,7 +48,13 @@ class MyAppRouter {
       GoRoute(
         path: '/confirmDelivery',
         name: AppRoutes.confirmDeliveryScreen,
-        builder: (context, state) => const ConfirmDeliveryScreen(),
+        builder: (context, state) {
+          final params = state.extra as Map<String, dynamic>? ?? {};
+          final id = params['id'] as int?;
+          final type = params['type'] as String?;
+
+          return ConfirmDeliveryScreen(orderId: id, type: type);
+        },
       ),
       GoRoute(
         path: '/deliveryList',

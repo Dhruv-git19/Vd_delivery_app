@@ -40,10 +40,13 @@ dependencies:
   go_router: ^16.2.0
   dio: ^5.9.0
   flutter_secure_storage: ^9.2.4
-  image_picker: ^1.2.0
+  image_picker: ^0.8.7+4
   flutter_dotenv: ^6.0.0
   shimmer: ^3.0.0
   s3_storage: ^1.0.4
+  url_launcher: ^6.1.10
+  geolocator: ^9.0.2
+  permission_handler: ^10.2.0
   
 
 dev_dependencies:
