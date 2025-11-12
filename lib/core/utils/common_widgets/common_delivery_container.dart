@@ -51,12 +51,7 @@ class CommonDeliveryContainer extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              SizedBox(width: 5.w),
-              _coloredContainer(
-                'High',
-                const Color.fromARGB(255, 179, 27, 16),
-                const Color.fromARGB(255, 242, 218, 216),
-              ),
+
               const Spacer(),
               _coloredContainer(
                 'Delivered',

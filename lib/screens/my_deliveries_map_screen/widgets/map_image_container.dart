@@ -11,7 +11,7 @@ class MapImage extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(6.r),
       child: SizedBox(
-        width: 200.w,
+        width: 400.w,
         height: 136.h,
         child: (imageUrl != null && imageUrl!.isNotEmpty)
             ? Image.network(

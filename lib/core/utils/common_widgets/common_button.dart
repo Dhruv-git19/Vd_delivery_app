@@ -93,9 +93,13 @@ class CommonButton extends StatelessWidget {
     );
 
     if (isfullWidth) {
-      return SizedBox(width: double.infinity, child: buttonChild);
-    } else if (width != null) {
-      return SizedBox(width: width, child: buttonChild);
+      return SizedBox(
+        width: double.infinity,
+        height: height,
+        child: buttonChild,
+      );
+    } else if (width != null || height != null) {
+      return SizedBox(width: width, height: height, child: buttonChild);
     } else {
       return buttonChild;
     }

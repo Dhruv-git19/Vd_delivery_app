@@ -5,10 +5,20 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Read Google Maps API Key from .env file
+val envFile = rootProject.file("../../.env")
+var googleMapsApiKey = ""
+if (envFile.exists()) {
+    envFile.forEachLine { line ->
+        if (line.startsWith("GOOGLE_MAPS_API_KEY=")) {
+            googleMapsApiKey = line.substring("GOOGLE_MAPS_API_KEY=".length).trim()
+        }
+    }
+}
+
 android {
     namespace = "com.example.vedasip_delivery_app"
-    // Use an explicit compileSdk to avoid plugin compilation issues
-    compileSdk = 33
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -25,11 +35,13 @@ android {
         applicationId = "com.example.vedasip_delivery_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-    minSdk = flutter.minSdkVersion
-    // Use explicit targetSdk to match compileSdk and modern plugins
-    targetSdk = 33
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Add Google Maps API Key as manifest placeholder
+        manifestPlaceholders["googleMapsApiKey"] = googleMapsApiKey
     }
 
     buildTypes {

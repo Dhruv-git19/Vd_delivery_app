@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -481,11 +483,11 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
       );
 
       if (distanceInMeters <= 100) {
-        // within 100 meters -> navigate to confirm screen with extras
-        context.push(
-          AppRoutes.confirmDeliveryScreen,
-          extra: {'id': widget.orderId, 'type': widget.type},
-        );
+      // within 100 meters -> navigate to confirm screen with extras
+      context.push(
+        AppRoutes.confirmDeliveryScreen,
+        extra: {'id': widget.orderId, 'type': widget.type},
+      );
       } else {
         MySnackBar.showSnackBar(
           context,
