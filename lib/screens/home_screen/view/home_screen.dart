@@ -103,13 +103,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 DrawerMenuItem(
                   icon: Icons.map_outlined,
                   text: 'Live Map',
-                  onTap: () {},
+                  onTap: () {
+                    context.push(AppRoutes.routeNavigationScreen);
+                  },
                 ),
-                DrawerMenuItem(
-                  icon: Icons.help_outline,
-                  text: 'Support',
-                  onTap: () {},
-                ),
+
                 DrawerMenuItem(
                   icon: Icons.logout,
                   text: 'Logout',
