@@ -11,6 +11,10 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/provider/delivery_details_provider.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
+import 'package:vedasip_delivery_app/services/dio_http.dart';
 
 class ConfirmDeliveryScreen extends StatefulWidget {
   final int? orderId;
@@ -26,6 +30,8 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
   late final DeliveryDetailsProvider _provider;
   final ImagePicker _picker = ImagePicker();
   final List<XFile> _images = [];
+  final TextEditingController _bottleController = TextEditingController();
+  bool _isSubmitting = false;
 
   Future<void> _takePhoto() async {
     try {
@@ -84,7 +90,100 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
   @override
   void dispose() {
     _provider.dispose();
+    _bottleController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submitOrderProof() async {
+    if (_images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add at least one proof image')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      final dioHttp = DioHttp();
+      final filePaths = _images.map((xfile) => xfile.path).toList();
+
+      final uploadResponse = await dioHttp.uploadProofImages(
+        context,
+        filePaths: filePaths,
+      );
+
+      final List<String> uploadedUrls = [];
+      if (uploadResponse.data['data'] is List) {
+        for (var item in uploadResponse.data['data']) {
+          if (item['fileUrl'] != null) {
+            uploadedUrls.add(item['fileUrl']);
+          }
+        }
+      }
+
+      if (uploadedUrls.isEmpty) {
+        throw Exception('No file URLs returned from upload');
+      }
+
+      final orderType = _getOrderType(_provider.details);
+      final submitResponse = await dioHttp.submitOrderProof(
+        context,
+        orderId: widget.orderId.toString(),
+        type: orderType.toLowerCase(),
+        currentLat: position.latitude,
+        currentLng: position.longitude,
+        uploadedFileUrls: uploadedUrls,
+        exchangeBottleCount: orderType.toLowerCase() == 'subscription'
+            ? _bottleController.text
+            : null,
+      );
+
+      if (mounted) {
+        final returnCode =
+            submitResponse.data['dataResponse']?['returnCode'] ?? -1;
+        final description =
+            submitResponse.data['dataResponse']?['description'] ??
+            'Unknown error';
+
+        if (returnCode == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(description), backgroundColor: Colors.green),
+          );
+
+          context.push(
+            AppRoutes.paymentCollectionScreen,
+            extra: {'id': widget.orderId, 'type': widget.type},
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(description),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error submitting proof: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   String _getCustomerName(Map<String, dynamic>? details) {
@@ -120,6 +219,28 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
               text: 'Awaiting Confirmation',
               code: '#DEL${widget.orderId ?? ''}',
             ),
+            bottomNavigationBar: Container(
+              padding: EdgeInsets.all(16.r),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: CommonButton(
+                  buttonValue: 'Confirm Order',
+                  isfullWidth: true,
+                  isLoading: _isSubmitting,
+                  onTap: _isSubmitting ? null : _submitOrderProof,
+                  height: 48.h,
+                ),
+              ),
+            ),
             body: Container(
               width: double.infinity,
               height: double.infinity,
@@ -152,7 +273,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                             SizedBox(height: 20.h),
                             _confirmationContainer(),
                             SizedBox(height: 20.h),
-                            // Show empty bottle section only for subscription orders
+
                             if (_getOrderType(details).toLowerCase() ==
                                 'subscription') ...[
                               _EmptyBottleContainer(),
@@ -231,7 +352,6 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
             width: double.infinity,
             child: Column(
               children: [
-                // Show selected images (camera or gallery)
                 if (_images.isNotEmpty) ...[
                   SizedBox(
                     height: 90.h,
@@ -389,6 +509,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
           ),
           SizedBox(height: 10.h),
           CommonTextfield(
+            textEditingController: _bottleController,
             contentPadding: EdgeInsets.symmetric(
               vertical: 0.h,
               horizontal: 5.w,
@@ -397,6 +518,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
             fillColor: Colors.white,
             borderColor: Colors.grey.shade300,
             radius: 12.r,
+            keyboardType: TextInputType.number,
           ),
         ],
       ),

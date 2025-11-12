@@ -96,7 +96,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 DrawerMenuItem(
                   icon: Icons.inventory_2_outlined,
                   text: 'My Delivery',
-                  onTap: () {},
+                  onTap: () {
+                    context.push(AppRoutes.deliveryListScreen);
+                  },
                 ),
                 DrawerMenuItem(
                   icon: Icons.map_outlined,
@@ -208,9 +210,64 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(
                             height: 125.h,
                             width: double.infinity,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: MapImage(),
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: MapImage(),
+                                ),
+                                Positioned(
+                                  top: 12.h,
+                                  left: 12.w,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      context.push(
+                                        AppRoutes.routeNavigationScreen,
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 10.h,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(
+                                          25.r,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(
+                                              0.1,
+                                            ),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.play_arrow_rounded,
+                                            color: primaryColor,
+                                            size: 20.r,
+                                          ),
+                                          SizedBox(width: 6.w),
+                                          Text(
+                                            'Start Today\'s Route',
+                                            style: TextStyle(
+                                              fontSize: 13.sp,
+                                              fontWeight: FontWeight.w600,
+                                              color: primaryColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],

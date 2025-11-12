@@ -131,4 +131,88 @@ class DioHttp {
       wrapData: true,
     );
   }
+
+  Future<Response> getDeliveryPartnerOrderHistory(BuildContext context) async {
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.getDeliveryPartnerOrderHistory,
+      data: {"deliveryStatus": "DELIVERED", "page": 1, "pageSize": 20},
+      wrapData: true,
+    );
+  }
+
+  Future<Response> getSpecificDeliveryPartnerOrderHistory(
+    BuildContext context, {
+    required String orderType,
+    required int orderId,
+  }) async {
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.getSpecificDeliveryPartnerOrderHistory,
+      data: {"orderType": orderType, "orderId": orderId},
+      wrapData: true,
+    );
+  }
+
+  Future<Response> uploadProofImages(
+    BuildContext context, {
+    required List<String> filePaths,
+  }) async {
+    final url = '$_baseUrl${ApiEndpoint.uploadProofImages.fullPath}';
+    try {
+      FormData formData = FormData();
+
+      for (String filePath in filePaths) {
+        formData.files.add(
+          MapEntry('files', await MultipartFile.fromFile(filePath)),
+        );
+      }
+
+      final response = await _dio.post(url, data: formData);
+      return response;
+    } on DioException catch (err) {
+      if (err.response?.statusCode == 401 || err.response?.statusCode == 403) {
+        await _secureStorage.deleteToken();
+        MySnackBar.showSnackBar(
+          context,
+          "Session expired. Please login again.",
+        );
+        context.go(AppRoutes.loginscreen);
+      }
+      ApiErrorHandler.handleDioError(context, err);
+      rethrow;
+    } catch (err) {
+      ApiErrorHandler.handleUnexpectedError(context, err);
+      rethrow;
+    }
+  }
+
+  Future<Response> submitOrderProof(
+    BuildContext context, {
+    required String orderId,
+    required String type,
+    required double currentLat,
+    required double currentLng,
+    required List<String> uploadedFileUrls,
+    String? exchangeBottleCount,
+  }) async {
+    final data = {
+      "orderId": orderId,
+      "type": type,
+      "currentLat": currentLat,
+      "currentLng": currentLng,
+      "uploadedFileUrls": uploadedFileUrls,
+    };
+
+    if (exchangeBottleCount != null && exchangeBottleCount.isNotEmpty) {
+      data["exchangeBottleCount"] = exchangeBottleCount;
+    }
+
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.submitOrderProof,
+      data: data,
+      wrapData: true,
+    );
+  }
 }

@@ -1,6 +1,8 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
@@ -112,7 +114,9 @@ class PaymentMethod extends StatelessWidget {
                 CommonButton(
                   isfullWidth: true,
                   buttonValue: 'Confirm Delivery',
-                  onTap: () {},
+                  onTap: () {
+                    context.go(AppRoutes.homeScreen);
+                  },
                   padding: EdgeInsets.all(8.r),
                 ),
                 SizedBox(height: 15.h),

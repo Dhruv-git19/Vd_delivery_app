@@ -29,29 +29,35 @@ class DeliveryConfirmCont extends StatelessWidget {
         children: [
           Row(
             children: [
-              const CircleAvatar(),
+              CircleAvatar(radius: 20.r),
               SizedBox(width: 10.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AllColors.deliverydetailfontColor,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AllColors.deliverydetailfontColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Text(
-                    address,
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: AllColors.deliverydetailshadelight,
+                    Text(
+                      address,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: AllColors.deliverydetailshadelight,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              const Spacer(),
+              SizedBox(width: 8.w),
               Column(
                 children: [
                   Row(

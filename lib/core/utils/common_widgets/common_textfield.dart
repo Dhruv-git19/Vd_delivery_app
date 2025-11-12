@@ -17,7 +17,7 @@ class CommonTextfield extends StatelessWidget {
   final bool enabled;
   final ValueChanged<String>? onChanged;
   final EdgeInsetsGeometry? contentPadding;
-
+  
   const CommonTextfield({
     super.key,
     required this.hintText,
