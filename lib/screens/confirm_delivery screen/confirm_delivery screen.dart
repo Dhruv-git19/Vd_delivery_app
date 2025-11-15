@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
@@ -219,71 +221,42 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
               text: 'Awaiting Confirmation',
               code: '#DEL${widget.orderId ?? ''}',
             ),
-            bottomNavigationBar: Container(
-              padding: EdgeInsets.all(16.r),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                child: CommonButton(
-                  buttonValue: 'Confirm Order',
-                  isfullWidth: true,
-                  isLoading: _isSubmitting,
-                  onTap: _isSubmitting ? null : _submitOrderProof,
-                  height: 48.h,
-                ),
+            bottomNavigationBar: BottomAppBar(
+              color: Colors.white,
+              child: CommonButton(
+                buttonValue: 'Confirm Order',
+                isfullWidth: true,
+                isLoading: _isSubmitting,
+                onTap: _isSubmitting ? null : _submitOrderProof,
               ),
             ),
-            body: Container(
-              width: double.infinity,
-              height: double.infinity,
-              padding: EdgeInsets.all(8.0.r),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    verificationColor,
-                    const Color.fromARGB(255, 218, 247, 239),
-                  ],
-                  begin: AlignmentDirectional.topCenter,
-                  end: AlignmentDirectional.bottomCenter,
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(8.0.r),
-                child: provider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            DeliveryConfirmCont(
-                              name: name,
-                              address: address,
-                              rupee: amount,
-                              items:
-                                  '${details?['cart']?['cartDetails']?.length ?? 0} items',
-                            ),
-
-                            SizedBox(height: 20.h),
-                            _confirmationContainer(),
-                            SizedBox(height: 20.h),
-
-                            if (_getOrderType(details).toLowerCase() ==
-                                'subscription') ...[
-                              _EmptyBottleContainer(),
-                              SizedBox(height: 20.h),
-                            ],
-                          ],
+            body: provider.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 10.h,
+                    ),
+                    child: Column(
+                      children: [
+                        DeliveryConfirmCont(
+                          name: name,
+                          address: address,
+                          rupee: amount,
+                          items:
+                              '${details?['cart']?['cartDetails']?.length ?? 0} items',
                         ),
-                      ),
-              ),
-            ),
+                        SizedBox(height: 16.h),
+                        _confirmationContainer(),
+                        SizedBox(height: 16.h),
+                        if (_getOrderType(details).toLowerCase() ==
+                            'subscription') ...[
+                          _EmptyBottleContainer(),
+                          SizedBox(height: 20.h),
+                        ],
+                      ],
+                    ),
+                  ),
           );
         },
       ),
@@ -293,64 +266,59 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
   Widget _confirmationContainer() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 5.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10.r),
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Choose Confirmation Method',
+            'Proof of Delivery',
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 15.sp,
               color: AllColors.verifyheadingcolor,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 10.h),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(vertical: 7.h),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 225, 255, 247),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Center(
-              child: Text(
-                'Photo Proof',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: AllColors.primaryColor,
-                  fontWeight: FontWeight.bold,
+          SizedBox(height: 4.h),
+          Text(
+            'Capture a clear photo of the delivered items or door/gate as proof.',
+            style: TextStyle(fontSize: 11.sp, color: Colors.grey[700]),
+          ),
+          SizedBox(height: 12.h),
+
+          /// Icon + short label
+          Row(
+            children: [
+              CommonIconBackgCont(
+                icon: Icon(Icons.security, color: AllColors.primaryColor),
+                backgroundColor: const Color.fromARGB(255, 230, 255, 248),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  'Photos help us verify successful delivery and avoid disputes.',
+                  style: TextStyle(fontSize: 11.sp, color: Colors.grey[800]),
                 ),
               ),
-            ),
+            ],
           ),
-          SizedBox(height: 20.h),
-          CommonIconBackgCont(
-            icon: Icon(Icons.security, color: AllColors.primaryColor),
-            backgroundColor: const Color.fromARGB(255, 230, 255, 248),
-          ),
-          SizedBox(height: 10.h),
-          Text(
-            'Photo Proof',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: AllColors.verifyheadingcolor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 10.h),
-          Text(
-            'Take a photo showing the delivered items or customer receipt',
-            style: TextStyle(fontSize: 10.sp, color: Colors.grey[800]),
-          ),
-          SizedBox(height: 10.h),
+
+          SizedBox(height: 14.h),
           CommonDottedBox(
             paddding: EdgeInsets.all(10.r),
             width: double.infinity,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (_images.isNotEmpty) ...[
                   SizedBox(
@@ -401,78 +369,71 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                   ),
                   SizedBox(height: 10.h),
                 ] else ...[
-                  Icon(
-                    Icons.camera_alt_outlined,
-                    size: 35.sp,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(height: 10.h),
-                  Text(
-                    'No photo captured yet',
-                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                  Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.camera_alt_outlined,
+                          size: 32.sp,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          'No photo captured yet',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          'Add at least one photo as delivery proof.',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 12.h),
                 ],
 
+                /// Action buttons
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(width: 5.w),
                     Expanded(
                       child: CommonButton(
-                        isfullWidth: false,
                         buttonValue: 'Take Photo',
-                        onTap: () async => await _takePhoto(),
+                        isfullWidth: true,
+                        onTap: _takePhoto,
                         textStyle: TextStyle(
                           fontWeight: FontWeight.w500,
-                          fontSize: 10.sp,
-                          color: AllColors.deliverydetailfontColor,
-                        ),
-                        borderRadius: 4.r,
-                        padding: EdgeInsets.symmetric(
-                          vertical: 5.h,
-                          horizontal: 2.h,
-                        ),
-                        backgroundColor: Colors.transparent,
-                        outlineColor: Colors.grey,
-                        boxConstraints: BoxConstraints(
-                          maxWidth: 40.w,
-                          maxHeight: 20.h,
+                          fontSize: 12.sp,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                    SizedBox(width: 20.w),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: CommonButton(
-                        borderRadius: 4.r,
-                        isfullWidth: false,
-                        boxConstraints: BoxConstraints(
-                          maxWidth: 40.w,
-                          maxHeight: 20.h,
-                        ),
+                        buttonValue: 'From Gallery',
+                        isfullWidth: true,
+                        onTap: _pickFromGallery,
+                        backgroundColor: Colors.white,
+                        outlineColor: AllColors.primaryColor,
                         textStyle: TextStyle(
                           fontWeight: FontWeight.w500,
-                          fontSize: 10.sp,
-                          color: AllColors.deliverydetailfontColor,
+                          fontSize: 12.sp,
+                          color: AllColors.primaryColor,
                         ),
-                        backgroundColor: Colors.transparent,
-                        outlineColor: Colors.grey,
-                        buttonValue: 'Upload File',
-                        padding: EdgeInsets.symmetric(
-                          vertical: 5.h,
-                          horizontal: 2.h,
-                        ),
-                        onTap: () async => await _pickFromGallery(),
                       ),
                     ),
-                    SizedBox(width: 5.w),
                   ],
                 ),
-                SizedBox(height: 12.h),
               ],
             ),
           ),
-          SizedBox(height: 10.h),
         ],
       ),
     );
@@ -489,32 +450,41 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// Title row
           Row(
             children: [
               Text(
                 'Empty Bottles Collected',
                 style: TextStyle(
-                  color: Colors.grey[800],
-                  fontSize: 15.sp,
+                  color: Colors.grey[900],
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Spacer(),
-              Text('2 Items', style: TextStyle(fontWeight: FontWeight.w500)),
             ],
           ),
+          SizedBox(height: 6.h),
           Text(
-            'No. Of Empty Bottles',
-            style: TextStyle(color: Colors.grey[850], fontSize: 11.sp),
+            'Enter how many empty bottles you collected from the customer (if any).',
+            style: TextStyle(color: Colors.grey[700], fontSize: 11.sp),
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 12.h),
+          Text(
+            'Number of empty bottles',
+            style: TextStyle(
+              color: Colors.grey[850],
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 8.h),
           CommonTextfield(
             textEditingController: _bottleController,
             contentPadding: EdgeInsets.symmetric(
-              vertical: 0.h,
-              horizontal: 5.w,
+              vertical: 8.h,
+              horizontal: 10.w,
             ),
-            hintText: 'Enter the numbers',
+            hintText: 'Enter count (e.g. 2)',
             fillColor: Colors.white,
             borderColor: Colors.grey.shade300,
             radius: 12.r,

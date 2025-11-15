@@ -1,10 +1,10 @@
 // import 'package:dotted_border/dotted_border.dart';
 // import 'package:flutter/material.dart';
-// import 'package:vedasip_delivery_app/core/theme/theme.dart';
-// import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
-// import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
-// import 'package:vedasip_delivery_app/core/utils/common_widgets/common_icon_backg_cont.dart';
-// import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
+// import 'package:veedasip/core/theme/theme.dart';
+// import 'package:veedasip/core/utils/common_widgets/common_button.dart';
+// import 'package:veedasip/core/utils/common_widgets/common_dotted_box.dart';
+// import 'package:veedasip/core/utils/common_widgets/common_icon_backg_cont.dart';
+// import 'package:veedasip/core/utils/common_widgets/common_textfield.dart';
 
 // class CustomTabWidget extends StatelessWidget {
 //   final String heading;

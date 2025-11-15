@@ -9,6 +9,8 @@ import 'package:vedasip_delivery_app/screens/delivery_details_screen/provider/de
 import 'package:vedasip_delivery_app/screens/home_screen/provider/homeProvider.dart';
 import 'package:vedasip_delivery_app/screens/login_screen/provider/loginProvider.dart';
 
+final router = buildRouter();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
@@ -30,10 +32,10 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => DeliveryHistoryProvider()),
         ],
         child: MaterialApp.router(
+          routerConfig: router,
           title: 'Delivery App',
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(),
-          routerConfig: MyAppRouter().router,
+          theme: ThemeData(scaffoldBackgroundColor: Colors.white),
         ),
       ),
     );

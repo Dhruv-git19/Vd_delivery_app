@@ -1,4 +1,4 @@
-package com.example.vedasip_delivery_app
+package com.veedasip.delivery_app
 
 import io.flutter.embedding.android.FlutterActivity
 

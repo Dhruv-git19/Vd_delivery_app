@@ -17,8 +17,8 @@ import 'package:vedasip_delivery_app/screens/payment_collection_screen/payment_c
 import 'package:vedasip_delivery_app/screens/splash_screen/splash_screen.dart';
 import 'package:vedasip_delivery_app/screens/verification_screen.dart/verification_screen.dart';
 
-class MyAppRouter {
-  GoRouter router = GoRouter(
+GoRouter buildRouter() {
+  return GoRouter(
     initialLocation: '/',
     routes: [
       GoRoute(

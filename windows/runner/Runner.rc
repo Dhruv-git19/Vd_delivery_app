@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "vedasip_delivery_app" "\0"
+            VALUE "CompanyName", "com.veedasip" "\0"
+            VALUE "FileDescription", "veedasip" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "vedasip_delivery_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "vedasip_delivery_app.exe" "\0"
-            VALUE "ProductName", "vedasip_delivery_app" "\0"
+            VALUE "InternalName", "veedasip" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 com.veedasip. All rights reserved." "\0"
+            VALUE "OriginalFilename", "veedasip.exe" "\0"
+            VALUE "ProductName", "veedasip" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

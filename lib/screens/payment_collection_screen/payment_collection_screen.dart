@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
+
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_confirm_cont.dart';
 import 'package:vedasip_delivery_app/screens/payment_collection_screen/widgets/tab_bar.dart';
-import 'package:provider/provider.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/provider/delivery_details_provider.dart';
 
 class PaymentCollectionScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   void initState() {
     super.initState();
     _provider = DeliveryDetailsProvider();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.orderId != null) {
         _provider.fetchOrderDetails(
@@ -64,6 +66,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
           final name = _getCustomerName(details);
           final address = _getCustomerAddress(details);
           final amount = _getTotalAmount(details);
+          final itemsCount = details?['cart']?['cartDetails']?.length ?? 0;
 
           return Scaffold(
             appBar: CommonAppbar(
@@ -71,41 +74,44 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
               text: 'Collect Payment',
               code: '#DEL${widget.orderId ?? ''}',
             ),
-            body: Container(
-              width: double.infinity,
-              height: double.infinity,
-              padding: EdgeInsets.all(8.0.r),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    verificationColor,
-                    const Color.fromARGB(255, 218, 247, 239),
-                  ],
-                  begin: AlignmentDirectional.topCenter,
-                  end: AlignmentDirectional.bottomCenter,
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(8.0.r),
-                child: provider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            DeliveryConfirmCont(
-                              name: name,
-                              address: address,
-                              rupee: amount,
-                              items:
-                                  '${details?['cart']?['cartDetails']?.length ?? 0} items',
-                            ),
-                            SizedBox(height: 20.h),
-                            CustomTab(),
-                          ],
+            body: provider.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 10.h,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DeliveryConfirmCont(
+                          name: name,
+                          address: address,
+                          rupee: amount,
+                          items: '$itemsCount items',
                         ),
-                      ),
-              ),
-            ),
+                        SizedBox(height: 10.h),
+                        Text(
+                          'Payment details',
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w600,
+                            color: AllColors.verifyheadingcolor,
+                          ),
+                        ),
+                        Text(
+                          'Choose how you collected the payment and update the status.',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: AllColors.deliverydetailshadelight,
+                          ),
+                        ),
+
+                        SizedBox(height: 10.h),
+                        const CustomTab(),
+                      ],
+                    ),
+                  ),
           );
         },
       ),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CommonAppbar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final List<Widget>? actions;
-  final Color? colors;
   final String? text;
   final String? code;
 
@@ -12,7 +12,6 @@ class CommonAppbar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     required this.title,
     this.actions,
-    this.colors,
     this.text,
     this.code,
   });
@@ -21,59 +20,94 @@ class CommonAppbar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
-      toolbarHeight: 80,
-      scrolledUnderElevation: 0,
       elevation: 0,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-          ),
-          if (code != null)
-            (Text(
-              code!,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-              ),
-            )),
-        ],
-      ),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () {
-          context.pop();
-        },
-      ),
-      actions: [
-        if (text != null)
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 247, 216, 220),
-              borderRadius: BorderRadius.circular(6),
+      scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      toolbarHeight: 72.h,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
-            child: Text(
-              text!,
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.red[900],
-                fontWeight: FontWeight.w500,
+          ],
+        ),
+      ),
+      titleSpacing: 0,
+      title: Padding(
+        padding: EdgeInsets.only(left: 12.w, right: 12.w),
+        child: Row(
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(20.r),
+              onTap: () => context.pop(),
+              child: Container(
+                padding: EdgeInsets.all(8.r),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 18.sp,
+                  color: Colors.black87,
+                ),
               ),
             ),
-          ),
-      ],
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  if (code != null) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      code!,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (text != null)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFE5E8),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  text!,
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: Colors.red[800],
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
 
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1.0),
-        child: Container(color: Colors.grey.shade300, height: 1.0),
+            if (actions != null) ...actions!,
+          ],
+        ),
       ),
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(80);
+  Size get preferredSize => Size.fromHeight(72.h);
 }
