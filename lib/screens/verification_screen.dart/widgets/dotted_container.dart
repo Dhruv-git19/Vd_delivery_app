@@ -3,14 +3,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
-import 'package:vedasip_delivery_app/core/utils/common_widgets/common_icon_backg_cont.dart';
+// (no extra icon background widget required here)
 
 class DottedUploadBox extends StatelessWidget {
   final String title;
   final String subTitle;
   final String? fileName; // nullable
   final bool isUploaded;
-  final VoidCallback ontap;
+  final VoidCallback onTakePhoto;
+  final VoidCallback onUploadFile;
   final Widget icon;
   final EdgeInsets? padding;
   final double borderRadius;
@@ -29,7 +30,8 @@ class DottedUploadBox extends StatelessWidget {
     this.borderRadius = 14,
     this.borderColor = const Color(0xFF41C19E),
     this.iconbackgroundColor,
-    required this.ontap,
+    required this.onTakePhoto,
+    required this.onUploadFile,
     this.backgroundColor,
   });
 
@@ -114,7 +116,7 @@ class DottedUploadBox extends StatelessWidget {
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
                   ),
-                  onTap: ontap,
+                  onTap: onTakePhoto,
                   padding: EdgeInsets.symmetric(
                     vertical: 7.h,
                     horizontal: 18.w,
@@ -140,7 +142,7 @@ class DottedUploadBox extends StatelessWidget {
                       size: 18.sp,
                       color: Colors.grey.shade600,
                     ),
-                    onTap: ontap,
+                    onTap: onTakePhoto,
                     padding: EdgeInsets.symmetric(
                       vertical: 7.h,
                       horizontal: 16.w,
@@ -162,7 +164,7 @@ class DottedUploadBox extends StatelessWidget {
                       size: 18.sp,
                       color: Colors.grey.shade600,
                     ),
-                    onTap: ontap,
+                    onTap: onUploadFile,
                     padding: EdgeInsets.symmetric(
                       vertical: 7.h,
                       horizontal: 16.w,

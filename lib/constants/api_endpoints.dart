@@ -4,13 +4,15 @@ enum ApiEndpoint {
   logout('/logout'),
   verifyOTP('/verifyOTP'),
   getSpecificUser('/getSpecificUser'),
+  uploadKYCDocument('/uploadKYCDocument'),
   uploadProofImages('/uploadProofImages'),
   getSpecificOrderDetails('/getSpecificOrderDetails'),
   submitOrderProof('/submitOrderProof'),
   getDeliveryPartnerOrderHistory('/getDeliveryPartnerOrderHistory'),
-  getSpecificDeliveryPartnerOrderHistory('/getSpecificDeliveryPartnerOrderHistory'),
+  getSpecificDeliveryPartnerOrderHistory(
+    '/getSpecificDeliveryPartnerOrderHistory',
+  ),
   getSpecificOrdersAssignment('/getSpecificOrdersAssignment');
- 
 
   final String path;
 

@@ -196,7 +196,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: Colors.white,
                                   size: 26.r,
                                 ),
-                                onPressed: () {},
+                                onPressed: () {
+                                  context.push(AppRoutes.verificationscreen);
+                                },
                               ),
                             ],
                           ),
