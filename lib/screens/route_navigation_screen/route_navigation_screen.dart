@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/screens/route_navigation_screen/provider/route_navigation_provider.dart';
@@ -137,19 +138,9 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
 
       // Draw polyline from current location to next delivery
       if (_currentPosition != null) {
-        _polylines.add(
-          Polyline(
-            polylineId: const PolylineId('route'),
-            points: [
-              LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-              LatLng(
-                nextOrder.address!.latitude!,
-                nextOrder.address!.longitude!,
-              ),
-            ],
-            color: primaryColor,
-            width: 4,
-          ),
+        _fetchRoutePolyline(
+          LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+          LatLng(nextOrder.address!.latitude!, nextOrder.address!.longitude!),
         );
       }
 
@@ -188,6 +179,62 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
         100.0,
       ),
     );
+  }
+
+  Future<void> _fetchRoutePolyline(LatLng origin, LatLng destination) async {
+    try {
+      final String? apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
+      if (apiKey == null || apiKey.isEmpty) {
+
+        _addStraightLinePolyline(origin, destination);
+        return;
+      }
+
+      PolylinePoints polylinePoints = PolylinePoints();
+
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        apiKey,
+        PointLatLng(origin.latitude, origin.longitude),
+        PointLatLng(destination.latitude, destination.longitude),
+        travelMode: TravelMode.driving,
+      );
+
+      if (result.points.isNotEmpty) {
+        List<LatLng> polylineCoordinates = result.points
+            .map((point) => LatLng(point.latitude, point.longitude))
+            .toList();
+
+        setState(() {
+          _polylines.add(
+            Polyline(
+              polylineId: const PolylineId('route'),
+              points: polylineCoordinates,
+              color: primaryColor,
+              width: 4,
+            ),
+          );
+        });
+      } else {
+
+        _addStraightLinePolyline(origin, destination);
+      }
+    } catch (e) {
+
+      _addStraightLinePolyline(origin, destination);
+    }
+  }
+
+  void _addStraightLinePolyline(LatLng origin, LatLng destination) {
+    setState(() {
+      _polylines.add(
+        Polyline(
+          polylineId: const PolylineId('route'),
+          points: [origin, destination],
+          color: primaryColor,
+          width: 4,
+        ),
+      );
+    });
   }
 
   @override
@@ -277,9 +324,13 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
                 myLocationEnabled: true,
                 myLocationButtonEnabled: true,
                 zoomControlsEnabled: true,
+                mapType: MapType.normal,
                 onMapCreated: (controller) {
                   _mapController = controller;
                   _updateMap();
+                },
+                onCameraMove: (position) {
+                  debugPrint('🗺️ Camera moved to: ${position.target}');
                 },
               ),
 

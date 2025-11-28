@@ -187,6 +187,42 @@ class DioHttp {
     }
   }
 
+  Future<Response> uploadKYCDocument(
+    BuildContext context, {
+    required String documentType,
+    required String filePath,
+  }) async {
+    final url = '$_baseUrl${ApiEndpoint.uploadKYCDocument.fullPath}';
+    try {
+      FormData formData = FormData();
+
+      // include document type as a field
+      formData.fields.add(MapEntry('documentType', documentType));
+
+      // attach the single file under key 'file'
+      formData.files.add(
+        MapEntry('file', await MultipartFile.fromFile(filePath)),
+      );
+
+      final response = await _dio.post(url, data: formData);
+      return response;
+    } on DioException catch (err) {
+      if (err.response?.statusCode == 401 || err.response?.statusCode == 403) {
+        await _secureStorage.deleteToken();
+        MySnackBar.showSnackBar(
+          context,
+          "Session expired. Please login again.",
+        );
+        context.go(AppRoutes.loginscreen);
+      }
+      ApiErrorHandler.handleDioError(context, err);
+      rethrow;
+    } catch (err) {
+      ApiErrorHandler.handleUnexpectedError(context, err);
+      rethrow;
+    }
+  }
+
   Future<Response> submitOrderProof(
     BuildContext context, {
     required String orderId,

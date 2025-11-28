@@ -6,7 +6,7 @@ plugins {
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
-val envFile = rootProject.file("../../.env")
+val envFile = rootProject.file("../.env")
 
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
@@ -16,10 +16,15 @@ if (keystorePropertiesFile.exists()) {
 var googleMapsApiKey = ""
 if (envFile.exists()) {
     envFile.forEachLine { line ->
-        if (line.startsWith("GOOGLE_MAPS_API_KEY=")) {
-            googleMapsApiKey = line.substring("GOOGLE_MAPS_API_KEY=".length).trim()
+        val trimmedLine = line.trim()
+        if (trimmedLine.startsWith("GOOGLE_MAPS_API_KEY=") && !trimmedLine.startsWith("#")) {
+            googleMapsApiKey = trimmedLine.substring("GOOGLE_MAPS_API_KEY=".length).trim()
+            println("Google Maps API Key loaded: ${if (googleMapsApiKey.isNotEmpty()) "YES" else "NO"}")
         }
     }
+}
+if (googleMapsApiKey.isEmpty()) {
+    println("WARNING: Google Maps API Key is empty!")
 }
 
 android {
