@@ -223,6 +223,34 @@ class DioHttp {
     }
   }
 
+  Future<Response> registerDeliveryPartner(
+    BuildContext context, {
+    required String fullName,
+    required String emailId,
+    required String mobileNumber,
+    required String password,
+    required String idPhotoUrl,
+    required String drivingLicenseUrl,
+    required String vehicleRegistrationUrl,
+  }) async {
+    final data = {
+      "fullName": fullName,
+      "emailId": emailId,
+      "mobileNumber": mobileNumber,
+      "password": password,
+      "vehicleRegistrationUrl": vehicleRegistrationUrl,
+      "drivingLicenseUrl": drivingLicenseUrl,
+      "idPhotoUrl": idPhotoUrl,
+    };
+
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.registerDeliveryPartner,
+      data: data,
+      wrapData: true,
+    );
+  }
+
   Future<Response> submitOrderProof(
     BuildContext context, {
     required String orderId,
