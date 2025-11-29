@@ -216,40 +216,40 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              // Positioned(
-              //   left: 0,
-              //   right: 0,
-              //   bottom: 24.h,
-              //   child: Padding(
-              //     padding: EdgeInsets.symmetric(horizontal: 18.w),
-              //     child: Row(
-              //       mainAxisAlignment: MainAxisAlignment.center,
-              //       children: [
-              //         Text(
-              //           "Don't have an account? ",
-              //           style: TextStyle(
-              //             fontSize: 12.sp,
-              //             color: AppColor.constWhite,
-              //             fontWeight: FontWeight.w500,
-              //           ),
-              //         ),
-              //         GestureDetector(
-              //           onTap: () {
-              //             context.go(AppRoutes.verificationscreen);
-              //           },
-              //           child: Text(
-              //             'Register here',
-              //             style: TextStyle(
-              //               fontSize: 12.sp,
-              //               color: primaryColor,
-              //               fontWeight: FontWeight.w600,
-              //             ),
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 24.h,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 18.w),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Don't have an account? ",
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: AppColor.constWhite,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          context.push(AppRoutes.verificationscreen);
+                        },
+                        child: Text(
+                          'Register here',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: primaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           );
         },

@@ -148,3 +148,4 @@ class HomeScreenShimmer extends StatelessWidget {
     );
   }
 }
+

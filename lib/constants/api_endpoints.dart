@@ -8,6 +8,7 @@ enum ApiEndpoint {
   uploadProofImages('/uploadProofImages'),
   getSpecificOrderDetails('/getSpecificOrderDetails'),
   submitOrderProof('/submitOrderProof'),
+  registerDeliveryPartner('/registerDeliveryPartner'),
   getDeliveryPartnerOrderHistory('/getDeliveryPartnerOrderHistory'),
   getSpecificDeliveryPartnerOrderHistory(
     '/getSpecificDeliveryPartnerOrderHistory',

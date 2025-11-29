@@ -2,6 +2,7 @@ class UserResponse {
   final int id;
   final String fullName;
   final int roleId;
+  final int? isKycVerified;
   final bool isVerified;
   final String emailId;
   final String mobileNumber;
@@ -11,6 +12,7 @@ class UserResponse {
     required this.id,
     required this.fullName,
     required this.roleId,
+    this.isKycVerified,
     required this.isVerified,
     required this.emailId,
     required this.mobileNumber,
@@ -22,6 +24,9 @@ class UserResponse {
       id: json['id'],
       fullName: json['fullName'] ?? '',
       roleId: json['roleId'] ?? 0,
+      isKycVerified: json.containsKey('isKYCVerified')
+          ? json['isKYCVerified'] as int?
+          : null,
       isVerified: json['isVerified'] ?? false,
       emailId: json['emailId'] ?? '',
       mobileNumber: json['mobileNumber'] ?? '',
@@ -35,11 +40,7 @@ class Role {
   final String name;
   final String roleUniqueId;
 
-  Role({
-    required this.id,
-    required this.name,
-    required this.roleUniqueId,
-  });
+  Role({required this.id, required this.name, required this.roleUniqueId});
 
   factory Role.fromJson(Map<String, dynamic> json) {
     return Role(

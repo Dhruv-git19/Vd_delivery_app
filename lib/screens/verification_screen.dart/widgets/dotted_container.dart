@@ -18,6 +18,8 @@ class DottedUploadBox extends StatelessWidget {
   final Color borderColor;
   final Color? iconbackgroundColor;
   final Color? backgroundColor;
+  final Widget? preview;
+  final VoidCallback? onRemove;
 
   const DottedUploadBox({
     super.key,
@@ -32,6 +34,8 @@ class DottedUploadBox extends StatelessWidget {
     this.iconbackgroundColor,
     required this.onTakePhoto,
     required this.onUploadFile,
+    this.preview,
+    this.onRemove,
     this.backgroundColor,
   });
 
@@ -86,94 +90,92 @@ class DottedUploadBox extends StatelessWidget {
             ),
 
             SizedBox(height: 12.h),
-
-            if (isUploaded) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            // If a preview widget is provided, show it with a top-right remove button
+            if (preview != null) ...[
+              Stack(
                 children: [
-                  Icon(Icons.check, size: 18.sp, color: borderColor),
-                  SizedBox(width: 3.w),
-                  Text(
-                    fileName ?? "",
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      color: borderColor,
-                      fontWeight: FontWeight.w700,
-                      decoration: TextDecoration.underline,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 120.h,
+                      child: preview,
+                    ),
+                  ),
+                  Positioned(
+                    right: 6.w,
+                    top: 6.h,
+                    child: GestureDetector(
+                      onTap: onRemove,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: EdgeInsets.all(6.r),
+                        child: Icon(
+                          Icons.close,
+                          size: 16.sp,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 12.h),
-              SizedBox(
-                child: CommonButton(
-                  buttonValue: "Replace",
-                  borderRadius: 8,
-                  backgroundColor: Colors.white,
+            ],
+
+            // Always show action buttons at the bottom (Take Photo / Upload File)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CommonButton(
+                  isfullWidth: false,
+                  buttonValue: "Take Photo",
+                  backgroundColor: Colors.transparent,
                   outlineColor: Colors.grey.shade300,
                   textStyle: TextStyle(
                     color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
                     fontSize: 10.sp,
-                    fontWeight: FontWeight.w600,
+                  ),
+                  icon: Icon(
+                    Icons.camera_alt,
+                    size: 18.sp,
+                    color: Colors.grey.shade600,
                   ),
                   onTap: onTakePhoto,
                   padding: EdgeInsets.symmetric(
                     vertical: 7.h,
-                    horizontal: 18.w,
+                    horizontal: 16.w,
                   ),
+                  borderRadius: 8.r,
                 ),
-              ),
-            ] else ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CommonButton(
-                    isfullWidth: false,
-                    buttonValue: "Take Photo",
-                    backgroundColor: Colors.transparent,
-                    outlineColor: Colors.grey.shade300,
-                    textStyle: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 10.sp,
-                    ),
-                    icon: Icon(
-                      Icons.camera_alt,
-                      size: 18.sp,
-                      color: Colors.grey.shade600,
-                    ),
-                    onTap: onTakePhoto,
-                    padding: EdgeInsets.symmetric(
-                      vertical: 7.h,
-                      horizontal: 16.w,
-                    ),
-                    borderRadius: 8.r,
+                SizedBox(width: 10.w),
+                CommonButton(
+                  buttonValue: "Upload File",
+                  outlineColor: Colors.grey.shade300,
+                  backgroundColor: Colors.transparent,
+                  textStyle: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 10.sp,
                   ),
-                  SizedBox(width: 10.w),
-                  CommonButton(
-                    buttonValue: "Upload File",
-                    outlineColor: Colors.grey.shade300,
-                    backgroundColor: Colors.transparent,
-                    textStyle: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 10.sp,
-                    ),
-                    icon: Icon(
-                      Icons.upload_file,
-                      size: 18.sp,
-                      color: Colors.grey.shade600,
-                    ),
-                    onTap: onUploadFile,
-                    padding: EdgeInsets.symmetric(
-                      vertical: 7.h,
-                      horizontal: 16.w,
-                    ),
-                    borderRadius: 8.r,
+                  icon: Icon(
+                    Icons.upload_file,
+                    size: 18.sp,
+                    color: Colors.grey.shade600,
                   ),
-                ],
-              ),
-            ],
+                  onTap: onUploadFile,
+                  padding: EdgeInsets.symmetric(
+                    vertical: 7.h,
+                    horizontal: 16.w,
+                  ),
+                  borderRadius: 8.r,
+                ),
+              ],
+            ),
           ],
         ),
       ),
