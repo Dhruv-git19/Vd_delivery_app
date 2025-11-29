@@ -366,8 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Builder(
                                     builder: (context) => IconButton(
@@ -396,18 +395,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
 
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.notifications,
-                                      color: Colors.white,
-                                      size: 26.r,
-                                    ),
-                                    onPressed: () {
-                                      context.push(
-                                        AppRoutes.verificationscreen,
-                                      );
-                                    },
-                                  ),
+                                  // IconButton(
+                                  //   icon: Icon(
+                                  //     Icons.notifications,
+                                  //     color: Colors.white,
+                                  //     size: 26.r,
+                                  //   ),
+                                  //   onPressed: () {
+                                  //     context.push(
+                                  //       AppRoutes.verificationscreen,
+                                  //     );
+                                  //   },
+                                  // ),
                                 ],
                               ),
 
