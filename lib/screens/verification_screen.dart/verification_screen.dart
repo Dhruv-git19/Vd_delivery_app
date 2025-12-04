@@ -1,17 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
-import 'widgets/dotted_container.dart';
-import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'package:vedasip_delivery_app/services/dio_http.dart';
 import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
-import 'package:go_router/go_router.dart';
-import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/widget/snack_bar.dart';
+
+import 'widgets/dotted_container.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -33,6 +35,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   bool _uploadingId = false;
   bool _uploadingDriving = false;
   bool _uploadingVehicle = false;
+  bool _obscurePassword = true;
   final TextEditingController fullnameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
@@ -165,10 +168,52 @@ class _VerificationScreenState extends State<VerificationScreen> {
             ),
             SizedBox(height: 10.h),
 
-            CommonTextfield(
-              hintText: 'Password',
-              textEditingController: passwordController,
+            TextField(
+              controller: passwordController,
+              obscureText: _obscurePassword,
               keyboardType: TextInputType.visiblePassword,
+              decoration: InputDecoration(
+                hint: Row(
+                  children: [
+                    Text(
+                      'Password',
+                      style: TextStyle(
+                        color: const Color.fromARGB(255, 97, 95, 95),
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ],
+                ),
+                filled: true,
+                fillColor: textfieldColor,
+                hintStyle: TextStyle(
+                  color: const Color.fromARGB(255, 97, 95, 95),
+                  fontSize: 14.sp,
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12.w,
+                  vertical: 10.h,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(6.r),
+                  borderSide: BorderSide(color: primaryColor, width: 1.w),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(6.r),
+                  borderSide: BorderSide(color: primaryColor, width: 1.w),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    color: AllColors.deliverydetailfontColor,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
+              ),
             ),
 
             SizedBox(height: 20.h),
@@ -177,9 +222,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               title: "ID Photo",
               subTitle: "Take a clear photo of your government ID",
               isUploaded: _idPhotoPath != null,
-              fileName: _idPhotoPath != null
-                  ? _idPhotoPath!.split('/').last
-                  : null,
+              fileName: _idPhotoPath?.split('/').last,
               icon: _idPhotoPath != null
                   ? Icon(Icons.check, size: 20.sp, color: Color(0xFF41C19E))
                   : Icon(
@@ -210,9 +253,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               title: "Driving License",
               subTitle: "Upload your valid driving license",
               isUploaded: _drivingLicensePath != null,
-              fileName: _drivingLicensePath != null
-                  ? _drivingLicensePath!.split('/').last
-                  : null,
+              fileName: _drivingLicensePath?.split('/').last,
               icon: _drivingLicensePath != null
                   ? Icon(Icons.check, size: 20.sp, color: Color(0xFF41C19E))
                   : Icon(
@@ -244,9 +285,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               title: "Vehicle Registration",
               subTitle: "Upload your vehicle registration document",
               isUploaded: _vehicleRegistrationPath != null,
-              fileName: _vehicleRegistrationPath != null
-                  ? _vehicleRegistrationPath!.split('/').last
-                  : null,
+              fileName: _vehicleRegistrationPath?.split('/').last,
               icon: _vehicleRegistrationPath != null
                   ? Icon(Icons.check, size: 20.sp, color: Color(0xFF41C19E))
                   : Icon(
@@ -365,5 +404,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
     } catch (e) {
       MySnackBar.showSnackBar(context, 'Error during registration');
     }
+  }
+
+  @override
+  void dispose() {
+    fullnameController.dispose();
+    emailController.dispose();
+    mobileController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 }

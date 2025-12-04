@@ -44,7 +44,7 @@ dependencies:
   flutter_dotenv: ^6.0.0
   shimmer: ^3.0.0
   s3_storage: ^1.0.4
-  url_launcher: ^6.1.10
+  url_launcher: ^6.3.2
   geolocator: ^9.0.2
   google_maps_flutter: ^2.5.0
   flutter_polyline_points: ^1.0.0

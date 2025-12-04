@@ -10,6 +10,7 @@ import 'package:vedasip_delivery_app/screens/home_screen/provider/homeProvider.d
 import 'package:vedasip_delivery_app/screens/home_screen/widgets/drawerMenuItemWidget.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/widgets/home_screen_shimmer.dart';
 import 'package:vedasip_delivery_app/theme/color_pallete.dart';
+import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,51 +33,95 @@ class _HomeScreenState extends State<HomeScreen> {
     final homeProvider = Provider.of<HomeProvider>(context);
 
     Widget buildKycPending() {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(Icons.hourglass_top, size: 72.r, color: primaryColor),
-              SizedBox(height: 16.h),
-              Text(
-                'Your KYC is pending',
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w600,
-                  color: verifyheadingcolor,
+      return RefreshIndicator(
+        onRefresh: () async {
+          try {
+            await Provider.of<HomeProvider>(
+              context,
+              listen: false,
+            ).fetchData(context);
+            final kyc = Provider.of<HomeProvider>(
+              context,
+              listen: false,
+            ).user?.isKycVerified;
+            if (kyc != null && kyc == 1) {
+              MySnackBar.showSnackBar(context, 'KYC verified.');
+              // After provider updates, the build will show main content.
+            } else {
+              MySnackBar.showSnackBar(
+                context,
+                'KYC is still pending verification.',
+              );
+            }
+          } catch (e) {
+            MySnackBar.showSnackBar(context, 'Failed to refresh KYC status');
+          }
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
+            ),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.hourglass_top, size: 72.r, color: primaryColor),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'Your KYC is pending',
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w600,
+                        color: verifyheadingcolor,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'We have received your documents. Please wait while we verify your KYC.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: const Color(0xFF6C6C6C),
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 24.w,
+                          vertical: 12.h,
+                        ),
+                      ),
+                      onPressed: () {
+                        context.push(AppRoutes.loginscreen);
+                      },
+                      child: Text(
+                        'Go to Login',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          color: AppColor.constWhite,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+                    Text(
+                      'Pull down to refresh verification status',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: const Color(0xFF6C6C6C),
+                      ),
+                    ),
+                  ],
                 ),
-                textAlign: TextAlign.center,
               ),
-              SizedBox(height: 8.h),
-              Text(
-                'We have received your documents. Please wait while we verify your KYC.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: const Color(0xFF6C6C6C),
-                ),
-              ),
-              SizedBox(height: 24.h),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 24.w,
-                    vertical: 12.h,
-                  ),
-                ),
-                onPressed: () {
-                  context.push(AppRoutes.loginscreen);
-                },
-                child: Text(
-                  'Go to Login',
-                  style: TextStyle(fontSize: 16.sp, color: AppColor.constWhite),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       );
@@ -170,36 +215,37 @@ class _HomeScreenState extends State<HomeScreen> {
                           "assets/images/profilePhoto.png",
                         ),
                       ),
-                      Positioned(
-                        bottom: -2,
-                        right: -2,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(color: Colors.black12, blurRadius: 4),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.edit,
-                            size: 18.r,
-                            color: primaryColor,
-                          ),
-                        ),
-                      ),
+
+                      // Positioned(
+                      //   bottom: -2,
+                      //   right: -2,
+                      //   child: Container(
+                      //     padding: const EdgeInsets.all(6),
+                      //     decoration: BoxDecoration(
+                      //       color: Colors.white,
+                      //       shape: BoxShape.circle,
+                      //       boxShadow: [
+                      //         BoxShadow(color: Colors.black12, blurRadius: 4),
+                      //       ],
+                      //     ),
+                      //     child: Icon(
+                      //       Icons.edit,
+                      //       size: 18.r,
+                      //       color: primaryColor,
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
 
                 const SizedBox(height: 25),
 
-                DrawerMenuItem(
-                  icon: Icons.person_outline,
-                  text: 'Profile',
-                  onTap: () {},
-                ),
+                // DrawerMenuItem(
+                //   icon: Icons.person_outline,
+                //   text: 'Profile',
+                //   onTap: () {},
+                // ),
                 DrawerMenuItem(
                   icon: Icons.inventory_2_outlined,
                   text: 'My Delivery',
@@ -216,6 +262,170 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 DrawerMenuItem(
+                  icon: Icons.delete_outline,
+                  text: 'Delete Account',
+                  onTap: () async {
+                    final provider = Provider.of<HomeProvider>(
+                      context,
+                      listen: false,
+                    );
+
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (ctx) {
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                          backgroundColor: Colors.white,
+                          contentPadding: EdgeInsets.all(24.w),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 60.w,
+                                height: 60.h,
+                                decoration: BoxDecoration(
+                                  color: AllColors.drawerIconBackColor,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.delete_forever_rounded,
+                                  color: Colors.red.shade600,
+                                  size: 28.sp,
+                                ),
+                              ),
+                              SizedBox(height: 20.h),
+                              Text(
+                                'Delete Confirmation',
+                                style: TextStyle(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 12.h),
+                              Text(
+                                'Are you sure you want to delete your account? This action cannot be undone and all your data will be removed.',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: AllColors.deliverydetailshadelight,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                          actionsPadding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                          actions: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () => Navigator.of(ctx).pop(false),
+                                      borderRadius: BorderRadius.circular(8.r),
+                                      child: Container(
+                                        height: 44.h,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            8.r,
+                                          ),
+                                          border: Border.all(
+                                            color: AllColors.primaryColor,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            'Cancel',
+                                            style: TextStyle(
+                                              fontSize: 14.sp,
+                                              fontWeight: FontWeight.w600,
+                                              color: AllColors.primaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: provider.isLoading
+                                          ? null
+                                          : () async {
+                                              // perform deletion while dialog is open
+                                              final success = await provider
+                                                  .deleteAccount(ctx);
+                                              Navigator.of(ctx).pop(success);
+                                            },
+                                      borderRadius: BorderRadius.circular(8.r),
+                                      child: Container(
+                                        height: 44.h,
+                                        decoration: BoxDecoration(
+                                          color: Colors.red.shade600,
+                                          borderRadius: BorderRadius.circular(
+                                            8.r,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: provider.isLoading
+                                              ? SizedBox(
+                                                  width: 18.w,
+                                                  height: 18.w,
+                                                  child: CircularProgressIndicator(
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation(
+                                                          Colors.white,
+                                                        ),
+                                                    strokeWidth: 2.0,
+                                                  ),
+                                                )
+                                              : Text(
+                                                  'Delete',
+                                                  style: TextStyle(
+                                                    fontSize: 14.sp,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (confirmed == true) {
+                      // account deleted successfully
+                      await MySecureStorage().deleteToken();
+                      MySnackBar.showSnackBar(
+                        context,
+                        'Account deleted successfully',
+                      );
+                      Navigator.pop(context);
+                      context.go(AppRoutes.loginscreen);
+                    } else if (confirmed == false) {
+                      MySnackBar.showSnackBar(context, 'Deletion cancelled');
+                    } else {
+                      MySnackBar.showSnackBar(context, 'Deletion failed');
+                    }
+                  },
+                ),
+                DrawerMenuItem(
                   icon: Icons.logout,
                   text: 'Logout',
                   onTap: () async {
@@ -224,7 +434,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     context.go(AppRoutes.loginscreen);
                   },
                 ),
-
                 const Spacer(),
               ],
             ),
