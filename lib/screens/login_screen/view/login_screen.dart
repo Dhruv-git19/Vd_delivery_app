@@ -1,13 +1,16 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:vedasip_delivery_app/core/theme/theme.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
+import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
 import 'package:vedasip_delivery_app/screens/login_screen/provider/loginProvider.dart';
 import 'package:vedasip_delivery_app/theme/color_pallete.dart';
+import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,7 +22,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController otpController = TextEditingController();
-
+  bool _agreedToPolicy = false;
   @override
   void initState() {
     super.initState();
@@ -171,6 +174,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                               isfullWidth: true,
                                               onTap: provider.otpSent
                                                   ? () async {
+                                                      if (!_agreedToPolicy) {
+                                                        MySnackBar.showSnackBar(
+                                                          context,
+                                                          'Please agree to the privacy policy to continue',
+                                                        );
+                                                        return;
+                                                      }
                                                       final success =
                                                           await provider
                                                               .verifyOtp(
@@ -186,23 +196,98 @@ class _LoginScreenState extends State<LoginScreen> {
                                                         );
                                                       }
                                                     }
-                                                  : () => provider.sendOtp(
-                                                      context,
-                                                      phoneController.text,
-                                                    ),
+                                                  : () {
+                                                      if (!_agreedToPolicy) {
+                                                        MySnackBar.showSnackBar(
+                                                          context,
+                                                          'Please agree to the privacy policy to continue',
+                                                        );
+                                                        return;
+                                                      }
+                                                      provider.sendOtp(
+                                                        context,
+                                                        phoneController.text,
+                                                      );
+                                                    },
                                               buttonValue: provider.otpSent
                                                   ? 'Verify & Login'
                                                   : 'Send OTP',
                                             ),
-                                      SizedBox(height: 50.h),
-                                      Text(
-                                        'By logging in, you agree to our Terms of Service',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 12.sp,
-                                          color: const Color(0xFF888888),
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                      SizedBox(height: 20.h),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            height: 20.h,
+                                            width: 20.w,
+                                            child: Checkbox(
+                                              value: _agreedToPolicy,
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              onChanged: (v) {
+                                                setState(() {
+                                                  _agreedToPolicy = v ?? false;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(width: 8.w),
+                                          Expanded(
+                                            child: RichText(
+                                              text: TextSpan(
+                                                text:
+                                                    'I agree to the Privacy Policy',
+                                                style: TextStyle(
+                                                  fontSize: 12.sp,
+                                                  color: const Color(
+                                                    0xFF888888,
+                                                  ),
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                children: [
+                                                  TextSpan(
+                                                    text: ' (read)',
+                                                    style: TextStyle(
+                                                      fontSize: 12.sp,
+                                                      color: primaryColor,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                                    recognizer: TapGestureRecognizer()
+                                                      ..onTap = () async {
+                                                        final uri = Uri.parse(
+                                                          'https://veedasip.com/privacy-policy',
+                                                        );
+                                                        try {
+                                                          final launched =
+                                                              await launchUrl(
+                                                                uri,
+                                                                mode: LaunchMode
+                                                                    .externalApplication,
+                                                              );
+                                                          if (!launched) {
+                                                            MySnackBar.showSnackBar(
+                                                              context,
+                                                              'Could not open privacy policy',
+                                                            );
+                                                          }
+                                                        } catch (e) {
+                                                          MySnackBar.showSnackBar(
+                                                            context,
+                                                            'Could not open privacy policy',
+                                                          );
+                                                        }
+                                                      },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),

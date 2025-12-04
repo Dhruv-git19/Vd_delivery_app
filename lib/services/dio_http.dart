@@ -1,14 +1,15 @@
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
-import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vedasip_delivery_app/constants/api_endpoints.dart';
-import 'package:vedasip_delivery_app/services/api_error_handler.dart';
+import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/interceptor/dio_interceptor.dart';
+import 'package:vedasip_delivery_app/services/api_error_handler.dart';
 import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
+import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 
 class DioHttp {
   final Dio _dio;
@@ -60,6 +61,15 @@ class DioHttp {
     return _postRequest(
       context: context,
       endpoint: ApiEndpoint.logout,
+      data: {},
+      wrapData: true,
+    );
+  }
+
+  Future<Response> deleteMyAccount(BuildContext context) async {
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.deleteMyAccount,
       data: {},
       wrapData: true,
     );
@@ -127,7 +137,11 @@ class DioHttp {
     return _postRequest(
       context: context,
       endpoint: ApiEndpoint.verifyOTP,
-      data: {"userName": userName, "otp": otp},
+      data: {
+        "userName": userName,
+        "otp": otp,
+        "roleUniqueIds": "DELIVERY_PARTNER",
+      },
       wrapData: true,
     );
   }

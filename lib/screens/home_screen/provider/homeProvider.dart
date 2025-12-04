@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:vedasip_delivery_app/services/dio_http.dart';
-import 'package:vedasip_delivery_app/screens/home_screen/model/user_model.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/model/order_model.dart';
+import 'package:vedasip_delivery_app/screens/home_screen/model/user_model.dart';
+import 'package:vedasip_delivery_app/services/dio_http.dart';
 
 class HomeProvider with ChangeNotifier {
   final DioHttp _dioHttp = DioHttp();
@@ -70,6 +70,25 @@ class HomeProvider with ChangeNotifier {
       orders = [];
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<bool> deleteAccount(BuildContext context) async {
+    isLoading = true;
+    notifyListeners();
+    try {
+      final resp = await _dioHttp.deleteMyAccount(context);
+      isLoading = false;
+      notifyListeners();
+
+      if (resp.data['dataResponse']?['returnCode'] == 0) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      isLoading = false;
+      notifyListeners();
+      return false;
     }
   }
 }
