@@ -130,18 +130,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                           textEditingController: otpController,
                                           keyboardType: TextInputType.number,
                                         ),
-                                        if (provider.testOtp != null)
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                              top: 8.0.h,
-                                            ),
-                                            child: Text(
-                                              'Test OTP: ${provider.testOtp}',
-                                              style: const TextStyle(
-                                                color: Colors.red,
-                                              ),
-                                            ),
-                                          ),
+                                        // if (provider.testOtp != null)
+                                        //   Padding(
+                                        //     padding: EdgeInsets.only(
+                                        //       top: 8.0.h,
+                                        //     ),
+                                        //     child: Text(
+                                        //       'Test OTP: ${provider.testOtp}',
+                                        //       style: const TextStyle(
+                                        //         color: Colors.red,
+                                        //       ),
+                                        //     ),
+                                        //   ),
                                         SizedBox(height: 10.h),
                                         Row(
                                           mainAxisAlignment:
