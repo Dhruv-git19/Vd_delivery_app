@@ -9,12 +9,15 @@ enum ApiEndpoint {
   getSpecificOrderDetails('/getSpecificOrderDetails'),
   submitOrderProof('/submitOrderProof'),
   deleteMyAccount('/deleteMyAccount'),
+  submitSubscriptionBottleCount('/submitSubscriptionBottleCount'),
+  verifyDeliveryLocation('/verifyDeliveryLocation'),
   registerDeliveryPartner('/registerDeliveryPartner'),
   getDeliveryPartnerOrderHistory('/getDeliveryPartnerOrderHistory'),
   getSpecificDeliveryPartnerOrderHistory(
     '/getSpecificDeliveryPartnerOrderHistory',
   ),
-  getSpecificOrdersAssignment('/getSpecificOrdersAssignment');
+  getSpecificOrdersAssignment('/getSpecificOrdersAssignment'),
+  getAllAreas('/getAllAreas');
 
   final String path;
 

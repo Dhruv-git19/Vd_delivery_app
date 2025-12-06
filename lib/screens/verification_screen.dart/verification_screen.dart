@@ -1,5 +1,7 @@
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -36,10 +38,108 @@ class _VerificationScreenState extends State<VerificationScreen> {
   bool _uploadingDriving = false;
   bool _uploadingVehicle = false;
   bool _obscurePassword = true;
+  bool _loadingAreas = false;
+  String? emailError;
+  String? mobileError;
+  String? passwordError;
   final TextEditingController fullnameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  List<Map<String, Object>> _areas = [];
+  List<int> _selectedAreaIds = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAreas();
+  }
+
+  Future<void> _fetchAreas() async {
+    setState(() {
+      _loadingAreas = true;
+    });
+
+    try {
+      final dio = DioHttp();
+      final resp = await dio.getAllAreas(context, page: 1, pageSize: 100);
+
+      final returnCode =
+          resp.data?['dataResponse']?['returnCode'] as int? ?? -1;
+      if (returnCode == 0) {
+        final items = resp.data?['data']?['items'] as List<dynamic>? ?? [];
+        setState(() {
+          _areas = items
+              .map(
+                (e) => <String, Object>{
+                  'id': e['id'] as int? ?? 0,
+                  'areaName': e['areaName'] as String? ?? '',
+                  'pinCode':
+                      (e['pinCode'] is int
+                          ? e['pinCode'].toString()
+                          : e['pinCode'] as String?) ??
+                      '',
+                  'status': e['status'] as int? ?? 0,
+                },
+              )
+              .where((area) => area['status'] == 1)
+              .toList();
+        });
+      } else {
+        MySnackBar.showSnackBar(context, 'Failed to load areas');
+      }
+    } catch (e) {
+      log('Error fetching areas: $e');
+      MySnackBar.showSnackBar(context, 'Error loading areas');
+    } finally {
+      setState(() {
+        _loadingAreas = false;
+      });
+    }
+  }
+
+  void validateEmail(String value) {
+    final emailRegExp = RegExp(r'^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$');
+    setState(() {
+      final v = value.trim();
+      if (v.isEmpty) {
+        emailError = null;
+      } else if (!emailRegExp.hasMatch(v)) {
+        emailError = 'Please enter a valid email address.';
+      } else {
+        emailError = null;
+      }
+    });
+  }
+
+  void validateMobile(String value) {
+    final phoneRegExp = RegExp(r'^\d{10}$');
+    setState(() {
+      final v = value.trim();
+      if (v.isEmpty) {
+        mobileError = null;
+      } else if (!phoneRegExp.hasMatch(v)) {
+        mobileError = 'Please enter a valid 10-digit mobile number.';
+      } else {
+        mobileError = null;
+      }
+    });
+  }
+
+  void validatePassword(String value) {
+    final pwdRegExp = RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$');
+    setState(() {
+      if (value.isEmpty) {
+        passwordError = null;
+      } else if (!pwdRegExp.hasMatch(value)) {
+        passwordError =
+            'Password must be 8+ chars, include uppercase, number & special char.';
+      } else {
+        passwordError = null;
+      }
+    });
+  }
 
   Future<void> _pickAndUpload(String docType, ImageSource source) async {
     try {
@@ -68,10 +168,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         documentType: docType,
         filePath: picked.path,
       );
-
-      if (resp.statusCode != null &&
-          resp.statusCode! >= 200 &&
-          resp.statusCode! < 300) {
+      if (resp.data?['dataResponse']?['returnCode'] == 0) {
         // parse fileUrl from response and save it for registration payload
         final fileUrl = resp.data?['data']?['fileUrl'] as String?;
         if (fileUrl != null) {
@@ -87,15 +184,31 @@ class _VerificationScreenState extends State<VerificationScreen> {
         setState(() {
           if (docType == 'idPhoto') {
             _idPhotoPath = null;
+            _idPhotoUrl = null;
           } else if (docType == 'drivingLicense') {
             _drivingLicensePath = null;
+            _drivingLicenseUrl = null;
           } else if (docType == 'vehicleRegistration') {
             _vehicleRegistrationPath = null;
+            _vehicleRegistrationUrl = null;
           }
         });
       }
     } catch (e) {
-      MySnackBar.showSnackBar(context, 'Error uploading document');
+      setState(() {
+        if (docType == 'idPhoto') {
+          _idPhotoPath = null;
+          _idPhotoUrl = null;
+        } else if (docType == 'drivingLicense') {
+          _drivingLicensePath = null;
+          _drivingLicenseUrl = null;
+        } else if (docType == 'vehicleRegistration') {
+          _vehicleRegistrationPath = null;
+          _vehicleRegistrationUrl = null;
+        }
+      });
+
+      MySnackBar.showSnackBar(context, 'Error uploading document check logs');
       // log or handle
     } finally {
       setState(() {
@@ -104,6 +217,178 @@ class _VerificationScreenState extends State<VerificationScreen> {
         _uploadingVehicle = false;
       });
     }
+  }
+
+  /// Pick any file (images or pdf) from device storage and upload.
+  Future<void> _pickAndUploadFile(String docType) async {
+    try {
+      // allow images and pdfs
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+        allowMultiple: false,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final pickedFile = result.files.single;
+      final path = pickedFile.path;
+      if (path == null) return;
+
+      setState(() {
+        if (docType == 'idPhoto') {
+          _idPhotoPath = path;
+          _uploadingId = true;
+        } else if (docType == 'drivingLicense') {
+          _drivingLicensePath = path;
+          _uploadingDriving = true;
+        } else if (docType == 'vehicleRegistration') {
+          _vehicleRegistrationPath = path;
+          _uploadingVehicle = true;
+        }
+      });
+
+      final dio = DioHttp();
+      final resp = await dio.uploadKYCDocument(
+        context,
+        documentType: docType,
+        filePath: path,
+      );
+
+      if (resp.data?['dataResponse']?['returnCode'] == 0) {
+        final fileUrl = resp.data?['data']?['fileUrl'] as String?;
+        if (fileUrl != null) {
+          if (docType == 'idPhoto') _idPhotoUrl = fileUrl;
+          if (docType == 'drivingLicense') _drivingLicenseUrl = fileUrl;
+          if (docType == 'vehicleRegistration')
+            _vehicleRegistrationUrl = fileUrl;
+        }
+        MySnackBar.showSnackBar(context, 'Uploaded $docType successfully');
+      } else {
+        MySnackBar.showSnackBar(context, 'Upload failed for $docType');
+        setState(() {
+          if (docType == 'idPhoto') {
+            _idPhotoPath = null;
+            _idPhotoUrl = null;
+          } else if (docType == 'drivingLicense') {
+            _drivingLicensePath = null;
+            _drivingLicenseUrl = null;
+          } else if (docType == 'vehicleRegistration') {
+            _vehicleRegistrationPath = null;
+            _vehicleRegistrationUrl = null;
+          }
+        });
+      }
+    } catch (e) {
+      setState(() {
+        if (docType == 'idPhoto') {
+          _idPhotoPath = null;
+          _idPhotoUrl = null;
+        } else if (docType == 'drivingLicense') {
+          _drivingLicensePath = null;
+          _drivingLicenseUrl = null;
+        } else if (docType == 'vehicleRegistration') {
+          _vehicleRegistrationPath = null;
+          _vehicleRegistrationUrl = null;
+        }
+      });
+      MySnackBar.showSnackBar(context, 'Error uploading document');
+    } finally {
+      setState(() {
+        _uploadingId = false;
+        _uploadingDriving = false;
+        _uploadingVehicle = false;
+      });
+    }
+  }
+
+  Widget? _buildFilePreview(String? path) {
+    if (path == null) return null;
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.pdf')) {
+      final fileName = path.split('/').last;
+      return Container(
+        color: Colors.grey[100],
+        padding: EdgeInsets.all(12.r),
+        child: Row(
+          children: [
+            Icon(Icons.picture_as_pdf, color: Colors.redAccent),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(fileName, style: TextStyle(fontSize: 12.sp)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // for images, show actual image
+    return Image.file(File(path), fit: BoxFit.cover);
+  }
+
+  void _showAreaSelectionDialog() {
+    final tempSelected = List<int>.from(_selectedAreaIds);
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(
+            'Select Delivery Areas',
+            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _areas.length,
+              itemBuilder: (context, index) {
+                final area = _areas[index];
+                final areaId = area['id'] as int;
+                final areaName = area['areaName'] as String;
+                final pinCode = area['pinCode'] as String;
+                final isSelected = tempSelected.contains(areaId);
+
+                return CheckboxListTile(
+                  title: Text(areaName, style: TextStyle(fontSize: 14.sp)),
+                  subtitle: Text(
+                    'PIN: $pinCode',
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                  ),
+                  value: isSelected,
+                  onChanged: (bool? value) {
+                    setDialogState(() {
+                      if (value == true) {
+                        tempSelected.add(areaId);
+                      } else {
+                        tempSelected.remove(areaId);
+                      }
+                    });
+                  },
+                  activeColor: primaryColor,
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _selectedAreaIds = tempSelected;
+                });
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+              child: Text('Done', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildDottedBox({
@@ -158,6 +443,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
               hintText: 'Email Address',
               textEditingController: emailController,
               keyboardType: TextInputType.emailAddress,
+              errorText: emailError,
+              onChanged: (v) => validateEmail(v),
             ),
             SizedBox(height: 10.h),
 
@@ -165,6 +452,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
               hintText: 'Mobile Number',
               textEditingController: mobileController,
               keyboardType: TextInputType.phone,
+              errorText: mobileError,
+              onChanged: (v) => validateMobile(v),
             ),
             SizedBox(height: 10.h),
 
@@ -172,6 +461,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               controller: passwordController,
               obscureText: _obscurePassword,
               keyboardType: TextInputType.visiblePassword,
+              onChanged: (v) => validatePassword(v),
               decoration: InputDecoration(
                 hint: Row(
                   children: [
@@ -215,6 +505,122 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 ),
               ),
             ),
+            if (passwordError != null)
+              Padding(
+                padding: EdgeInsets.only(top: 6.h),
+                child: Text(
+                  passwordError!,
+                  style: TextStyle(color: Colors.red, fontSize: 12.sp),
+                ),
+              ),
+
+            SizedBox(height: 20.h),
+
+            // Area Selection Section
+            Text(
+              'Select Delivery Areas',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            if (_loadingAreas)
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            else if (_areas.isEmpty)
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(6.r),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Text(
+                  'No areas available',
+                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                ),
+              )
+            else
+              Container(
+                decoration: BoxDecoration(
+                  color: textfieldColor,
+                  borderRadius: BorderRadius.circular(6.r),
+                  border: Border.all(color: primaryColor, width: 1.w),
+                ),
+                child: Column(
+                  children: [
+                    InkWell(
+                      onTap: () => _showAreaSelectionDialog(),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 14.h,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _selectedAreaIds.isEmpty
+                                    ? 'Tap to select areas'
+                                    : '${_selectedAreaIds.length} area(s) selected',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: _selectedAreaIds.isEmpty
+                                      ? const Color.fromARGB(255, 97, 95, 95)
+                                      : Colors.black87,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_drop_down,
+                              color: AllColors.deliverydetailfontColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (_selectedAreaIds.isNotEmpty)
+                      Container(
+                        padding: EdgeInsets.all(8.w),
+                        child: Wrap(
+                          spacing: 8.w,
+                          runSpacing: 8.h,
+                          children: _selectedAreaIds.map((id) {
+                            final area = _areas.firstWhere(
+                              (a) => a['id'] == id,
+                              orElse: () => <String, Object>{
+                                'id': 0,
+                                'areaName': 'Unknown',
+                                'pinCode': '',
+                                'status': 0,
+                              },
+                            );
+                            return Chip(
+                              label: Text(
+                                area['areaName'] as String,
+                                style: TextStyle(fontSize: 12.sp),
+                              ),
+                              deleteIcon: Icon(Icons.close, size: 16.sp),
+                              onDeleted: () {
+                                setState(() {
+                                  _selectedAreaIds.remove(id);
+                                });
+                              },
+                              backgroundColor: primaryColor.withOpacity(0.1),
+                              side: BorderSide(color: primaryColor, width: 1),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
 
             SizedBox(height: 20.h),
 
@@ -232,11 +638,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     ),
               uploading: _uploadingId,
               onTakePhoto: () => _pickAndUpload('idPhoto', ImageSource.camera),
-              onUploadFile: () =>
-                  _pickAndUpload('idPhoto', ImageSource.gallery),
-              preview: _idPhotoPath != null
-                  ? Image.file(File(_idPhotoPath!), fit: BoxFit.cover)
-                  : null,
+              onUploadFile: () => _pickAndUploadFile('idPhoto'),
+              preview: _buildFilePreview(_idPhotoPath),
               onRemove: _idPhotoPath != null
                   ? () {
                       setState(() {
@@ -264,11 +667,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
               uploading: _uploadingDriving,
               onTakePhoto: () =>
                   _pickAndUpload('drivingLicense', ImageSource.camera),
-              onUploadFile: () =>
-                  _pickAndUpload('drivingLicense', ImageSource.gallery),
-              preview: _drivingLicensePath != null
-                  ? Image.file(File(_drivingLicensePath!), fit: BoxFit.cover)
-                  : null,
+              onUploadFile: () => _pickAndUploadFile('drivingLicense'),
+              preview: _buildFilePreview(_drivingLicensePath),
               onRemove: _drivingLicensePath != null
                   ? () {
                       setState(() {
@@ -296,14 +696,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
               uploading: _uploadingVehicle,
               onTakePhoto: () =>
                   _pickAndUpload('vehicleRegistration', ImageSource.camera),
-              onUploadFile: () =>
-                  _pickAndUpload('vehicleRegistration', ImageSource.gallery),
-              preview: _vehicleRegistrationPath != null
-                  ? Image.file(
-                      File(_vehicleRegistrationPath!),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
+              onUploadFile: () => _pickAndUploadFile('vehicleRegistration'),
+              preview: _buildFilePreview(_vehicleRegistrationPath),
               onRemove: _vehicleRegistrationPath != null
                   ? () {
                       setState(() {
@@ -353,11 +747,28 @@ class _VerificationScreenState extends State<VerificationScreen> {
     final mobile = mobileController.text.trim();
     final password = passwordController.text;
 
+    validateEmail(email);
+    validateMobile(mobile);
+    validatePassword(password);
+
     if (fullName.isEmpty ||
         email.isEmpty ||
         mobile.isEmpty ||
         password.isEmpty) {
       MySnackBar.showSnackBar(context, 'Please fill all required fields');
+      return;
+    }
+
+    if (emailError != null || mobileError != null || passwordError != null) {
+      MySnackBar.showSnackBar(context, 'Please correct the highlighted errors');
+      return;
+    }
+
+    if (_selectedAreaIds.isEmpty) {
+      MySnackBar.showSnackBar(
+        context,
+        'Please select at least one delivery area',
+      );
       return;
     }
 
@@ -381,6 +792,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         idPhotoUrl: _idPhotoUrl!,
         drivingLicenseUrl: _drivingLicenseUrl!,
         vehicleRegistrationUrl: _vehicleRegistrationUrl!,
+        areaIds: _selectedAreaIds,
       );
 
       final returnCode =

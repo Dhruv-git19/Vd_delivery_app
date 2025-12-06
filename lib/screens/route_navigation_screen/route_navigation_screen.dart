@@ -1,14 +1,15 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:vedasip_delivery_app/core/theme/theme.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
+import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/screens/route_navigation_screen/provider/route_navigation_provider.dart';
 
 class RouteNavigationScreen extends StatefulWidget {
@@ -47,19 +48,89 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        throw Exception('Location services are disabled.');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please enable location services')),
+          );
+        }
+        // Use warehouse location as fallback
+        setState(() {
+          _currentPosition = Position(
+            latitude: warehouseLat,
+            longitude: warehouseLng,
+            timestamp: DateTime.now(),
+            accuracy: 0,
+            altitude: 0,
+            heading: 0,
+            speed: 0,
+            speedAccuracy: 0,
+            altitudeAccuracy: 0,
+            headingAccuracy: 0,
+          );
+          _isLoadingLocation = false;
+        });
+        _updateMap();
+        return;
       }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          throw Exception('Location permissions are denied');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Location permission denied')),
+            );
+          }
+          // Use warehouse location as fallback
+          setState(() {
+            _currentPosition = Position(
+              latitude: warehouseLat,
+              longitude: warehouseLng,
+              timestamp: DateTime.now(),
+              accuracy: 0,
+              altitude: 0,
+              heading: 0,
+              speed: 0,
+              speedAccuracy: 0,
+              altitudeAccuracy: 0,
+              headingAccuracy: 0,
+            );
+            _isLoadingLocation = false;
+          });
+          _updateMap();
+          return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        throw Exception('Location permissions are permanently denied');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location permission permanently denied. Enable in settings.',
+              ),
+            ),
+          );
+        }
+        // Use warehouse location as fallback
+        setState(() {
+          _currentPosition = Position(
+            latitude: warehouseLat,
+            longitude: warehouseLng,
+            timestamp: DateTime.now(),
+            accuracy: 0,
+            altitude: 0,
+            heading: 0,
+            speed: 0,
+            speedAccuracy: 0,
+            altitudeAccuracy: 0,
+            headingAccuracy: 0,
+          );
+          _isLoadingLocation = false;
+        });
+        _updateMap();
+        return;
       }
 
       final position = await Geolocator.getCurrentPosition(
@@ -74,17 +145,33 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
       _updateMap();
     } catch (e) {
       setState(() {
+        // Use warehouse location as fallback on any error
+        _currentPosition = Position(
+          latitude: warehouseLat,
+          longitude: warehouseLng,
+          timestamp: DateTime.now(),
+          accuracy: 0,
+          altitude: 0,
+          heading: 0,
+          speed: 0,
+          speedAccuracy: 0,
+          altitudeAccuracy: 0,
+          headingAccuracy: 0,
+        );
         _isLoadingLocation = false;
       });
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error getting location: $e')));
+        ).showSnackBar(SnackBar(content: Text('Using warehouse location: $e')));
       }
+      _updateMap();
     }
   }
 
   void _updateMap() {
+    if (!mounted) return;
+
     final provider = Provider.of<RouteNavigationProvider>(
       context,
       listen: false,
@@ -119,8 +206,11 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
       ),
     );
 
-    // Add next delivery marker
-    if (nextOrder != null && nextOrder.address != null) {
+    // Add next delivery marker - with null safety checks
+    if (nextOrder != null &&
+        nextOrder.address != null &&
+        nextOrder.address!.latitude != null &&
+        nextOrder.address!.longitude != null) {
       _markers.add(
         Marker(
           markerId: MarkerId('delivery_${nextOrder.id}'),
@@ -148,7 +238,9 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
       _fitMarkersInView();
     }
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _fitMarkersInView() {
@@ -185,7 +277,6 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
     try {
       final String? apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
       if (apiKey == null || apiKey.isEmpty) {
-
         _addStraightLinePolyline(origin, destination);
         return;
       }
@@ -215,11 +306,9 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
           );
         });
       } else {
-
         _addStraightLinePolyline(origin, destination);
       }
     } catch (e) {
-
       _addStraightLinePolyline(origin, destination);
     }
   }
@@ -260,63 +349,124 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
 
           if (provider.error != null) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 48.r, color: Colors.red),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Error loading route',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 64.r, color: Colors.red),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'Error Loading Route',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 8.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      provider.fetchTodaysOrders(context);
-                      _getCurrentLocation();
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
+                    SizedBox(height: 12.h),
+                    Text(
+                      provider.error!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 24.w,
+                          vertical: 12.h,
+                        ),
+                      ),
+                      onPressed: () {
+                        provider.fetchTodaysOrders(context);
+                        _getCurrentLocation();
+                      },
+                      icon: const Icon(Icons.refresh, color: Colors.white),
+                      label: Text(
+                        'Retry',
+                        style: TextStyle(fontSize: 16.sp, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           if (provider.orders.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.inventory_2_outlined,
-                    size: 64.r,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'No deliveries with valid addresses',
-                    style: TextStyle(fontSize: 16.sp, color: Colors.grey),
-                  ),
-                ],
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.inventory_2_outlined,
+                      size: 64.r,
+                      color: Colors.grey[400],
+                    ),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'No Deliveries Today',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'There are no delivery orders with valid addresses for today.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 24.w,
+                          vertical: 12.h,
+                        ),
+                      ),
+                      onPressed: () {
+                        provider.fetchTodaysOrders(context);
+                      },
+                      icon: const Icon(Icons.refresh, color: Colors.white),
+                      label: Text(
+                        'Refresh',
+                        style: TextStyle(fontSize: 16.sp, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           final nextOrder = provider.nextOrder;
 
+          // Ensure we have a valid position before rendering map
+          if (_currentPosition == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
           return Stack(
             children: [
               GoogleMap(
                 initialCameraPosition: CameraPosition(
-                  target: _currentPosition != null
-                      ? LatLng(
-                          _currentPosition!.latitude,
-                          _currentPosition!.longitude,
-                        )
-                      : LatLng(warehouseLat, warehouseLng),
+                  target: LatLng(
+                    _currentPosition!.latitude,
+                    _currentPosition!.longitude,
+                  ),
                   zoom: 12,
                 ),
                 markers: _markers,
@@ -328,9 +478,6 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
                 onMapCreated: (controller) {
                   _mapController = controller;
                   _updateMap();
-                },
-                onCameraMove: (position) {
-                  debugPrint('🗺️ Camera moved to: ${position.target}');
                 },
               ),
 

@@ -95,10 +95,16 @@ class CommonTextfield extends StatelessWidget {
                   width: 1.w,
                 ),
               ),
-              errorText: errorText,
-              errorStyle: TextStyle(color: Colors.red, fontSize: 12.sp),
             ),
           ),
+          if (errorText != null)
+            Padding(
+              padding: EdgeInsets.only(top: 6.h),
+              child: Text(
+                errorText!,
+                style: TextStyle(color: Colors.red, fontSize: 12.sp),
+              ),
+            ),
         ],
       ),
     );

@@ -94,13 +94,33 @@ class RouteAddress {
       return null;
     }
 
+    String parsePostalCode(dynamic value) {
+      if (value == null) return '';
+      if (value is String) return value;
+      if (value is int) return value.toString();
+      return value.toString();
+    }
+
+    String parseString(dynamic value, String defaultValue) {
+      if (value == null) return defaultValue;
+      if (value is String) return value;
+      return value.toString();
+    }
+
+    int parseInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? 0;
+      return 0;
+    }
+
     return RouteAddress(
-      id: json['id'] as int? ?? 0,
-      fullAddress: json['fullAddress'] as String? ?? '',
-      city: json['city'] as String? ?? '',
-      state: json['state'] as String? ?? '',
-      country: json['country'] as String? ?? '',
-      postalCode: json['postalCode'] as String? ?? '',
+      id: parseInt(json['id']),
+      fullAddress: parseString(json['fullAddress'], ''),
+      city: parseString(json['city'], ''),
+      state: parseString(json['state'], ''),
+      country: parseString(json['country'], ''),
+      postalCode: parsePostalCode(json['postalCode']),
       latitude: parseLat(json['latitude']),
       longitude: parseLat(json['longitude']),
     );
@@ -133,10 +153,18 @@ class RouteUserDetails {
   });
 
   factory RouteUserDetails.fromJson(Map<String, dynamic> json) {
+    // Helper to safely parse mobile number
+    String? parseMobileNumber(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return value;
+      if (value is int) return value.toString();
+      return value.toString();
+    }
+
     return RouteUserDetails(
       id: json['id'] as int? ?? 0,
       fullName: json['full_name'] as String? ?? 'Unknown',
-      mobileNumber: json['mobile_number'] as String?,
+      mobileNumber: parseMobileNumber(json['mobile_number']),
     );
   }
 }

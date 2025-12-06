@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_confirm_cont.dart';
-import 'package:vedasip_delivery_app/screens/payment_collection_screen/widgets/tab_bar.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/provider/delivery_details_provider.dart';
+import 'package:vedasip_delivery_app/screens/payment_collection_screen/widgets/tab_bar.dart';
 
 class PaymentCollectionScreen extends StatefulWidget {
   final int? orderId;
