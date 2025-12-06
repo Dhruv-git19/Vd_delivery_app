@@ -1,22 +1,22 @@
-import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
+import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_confirm_cont.dart';
+import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_icon_backg_cont.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
-import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_confirm_cont.dart';
-import 'package:provider/provider.dart';
-import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/provider/delivery_details_provider.dart';
-import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:go_router/go_router.dart';
-import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/services/dio_http.dart';
+import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 
 class ConfirmDeliveryScreen extends StatefulWidget {
   final int? orderId;
@@ -32,6 +32,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
   late final DeliveryDetailsProvider _provider;
   final ImagePicker _picker = ImagePicker();
   final List<XFile> _images = [];
+  final List<XFile> _bottleImages = [];
   final TextEditingController _bottleController = TextEditingController();
   bool _isSubmitting = false;
 
@@ -48,28 +49,55 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Unable to open camera: $e')));
+        MySnackBar.showSnackBar(context, "Unable to open camera: $e");
       }
     }
   }
 
   Future<void> _pickFromGallery() async {
     try {
-      final List<XFile>? photos = await _picker.pickMultiImage(
-        imageQuality: 80,
-      );
-      if (photos != null && photos.isNotEmpty) {
+      final List<XFile> photos = await _picker.pickMultiImage(imageQuality: 80);
+      if (photos.isNotEmpty) {
         setState(() {
           _images.addAll(photos);
         });
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Unable to open gallery: $e')));
+        MySnackBar.showSnackBar(context, "Unable to open gallery: $e");
+      }
+    }
+  }
+
+  Future<void> _takeBottlePhoto() async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+      );
+      if (photo != null) {
+        setState(() {
+          _bottleImages.add(photo);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        MySnackBar.showSnackBar(context, "Unable to open camera: $e");
+      }
+    }
+  }
+
+  Future<void> _pickBottleFromGallery() async {
+    try {
+      final List<XFile> photos = await _picker.pickMultiImage(imageQuality: 80);
+      if (photos.isNotEmpty) {
+        setState(() {
+          _bottleImages.addAll(photos);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        MySnackBar.showSnackBar(context, "Unable to open gallery: $e");
       }
     }
   }
@@ -98,10 +126,27 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
 
   Future<void> _submitOrderProof() async {
     if (_images.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one proof image')),
-      );
+      MySnackBar.showSnackBar(context, 'Please add at least one proof image');
       return;
+    }
+
+    // For subscription: validate bottle count and photos
+    if (widget.type == 'subscription') {
+      final bottleCount = _bottleController.text.trim();
+      if (bottleCount.isNotEmpty) {
+        final count = int.tryParse(bottleCount);
+        if (count == null || count <= 0) {
+          MySnackBar.showSnackBar(context, 'Please enter a valid bottle count');
+          return;
+        }
+        if (_bottleImages.isEmpty) {
+          MySnackBar.showSnackBar(
+            context,
+            'Please add photos of collected bottles',
+          );
+          return;
+        }
+      }
     }
 
     setState(() {
@@ -134,15 +179,64 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
         throw Exception('No file URLs returned from upload');
       }
 
-      final orderType = _getOrderType(_provider.details);
+    
+      if (widget.type == 'subscription') {
+        final bottleCountText = _bottleController.text.trim();
+        if (bottleCountText.isNotEmpty && _bottleImages.isNotEmpty) {
+          final bottleCount = int.tryParse(bottleCountText) ?? 0;
+
+          // Upload bottle images
+          final bottleFilePaths = _bottleImages
+              .map((xfile) => xfile.path)
+              .toList();
+          final bottleUploadResponse = await dioHttp.uploadProofImages(
+            context,
+            filePaths: bottleFilePaths,
+          );
+
+          final List<String> bottleUploadedUrls = [];
+          if (bottleUploadResponse.data['data'] is List) {
+            for (var item in bottleUploadResponse.data['data']) {
+              if (item['fileUrl'] != null) {
+                bottleUploadedUrls.add(item['fileUrl']);
+              }
+            }
+          }
+
+          if (bottleUploadedUrls.isEmpty) {
+            throw Exception('No bottle image URLs returned from upload');
+          }
+
+          // Submit bottle count
+          final bottleCountResponse = await dioHttp
+              .submitSubscriptionBottleCount(
+                context,
+                uploadedFileUrls: bottleUploadedUrls,
+                subscriptionId: widget.orderId!,
+                takenBottleCount: bottleCount,
+              );
+
+          final bottleReturnCode =
+              bottleCountResponse.data['dataResponse']?['returnCode'] ?? -1;
+          if (bottleReturnCode != 0) {
+            final bottleDescription =
+                bottleCountResponse.data['dataResponse']?['description'] ??
+                'Failed to submit bottle count';
+            MySnackBar.showSnackBar(context, bottleDescription);
+            return;
+          }
+        }
+      }
+
+      // Step 3: Submit order proof
       final submitResponse = await dioHttp.submitOrderProof(
         context,
         orderId: widget.orderId.toString(),
-        type: orderType.toLowerCase(),
+        type: widget.type ?? 'cart',
         currentLat: position.latitude,
         currentLng: position.longitude,
         uploadedFileUrls: uploadedUrls,
-        exchangeBottleCount: orderType.toLowerCase() == 'subscription'
+        exchangeBottleCount: widget.type == 'subscription'
             ? _bottleController.text
             : null,
       );
@@ -155,29 +249,19 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
             'Unknown error';
 
         if (returnCode == 0) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(description), backgroundColor: Colors.green),
-          );
+          MySnackBar.showSnackBar(context, description);
 
           context.push(
             AppRoutes.paymentCollectionScreen,
             extra: {'id': widget.orderId, 'type': widget.type},
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(description),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-            ),
-          );
+          MySnackBar.showSnackBar(context, description);
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error submitting proof: $e')));
+        MySnackBar.showSnackBar(context, 'Error: $e');
       }
     } finally {
       if (mounted) {
@@ -249,8 +333,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                         SizedBox(height: 16.h),
                         _confirmationContainer(),
                         SizedBox(height: 16.h),
-                        if (_getOrderType(details).toLowerCase() ==
-                            'subscription') ...[
+                        if (widget.type == 'subscription') ...[
                           _EmptyBottleContainer(),
                           SizedBox(height: 20.h),
                         ],
@@ -489,7 +572,132 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
             borderColor: Colors.grey.shade300,
             radius: 12.r,
             keyboardType: TextInputType.number,
+            onChanged: (value) {
+              setState(() {});
+            },
           ),
+          if (_bottleController.text.trim().isNotEmpty) ...[
+            SizedBox(height: 16.h),
+            Text(
+              'Bottle Collection Proof',
+              style: TextStyle(
+                color: Colors.grey[850],
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            CommonDottedBox(
+              paddding: EdgeInsets.all(10.r),
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_bottleImages.isNotEmpty) ...[
+                    SizedBox(
+                      height: 90.h,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _bottleImages.length,
+                        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                        itemBuilder: (context, i) {
+                          final xfile = _bottleImages[i];
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8.r),
+                                child: Image.file(
+                                  File(xfile.path),
+                                  width: 120.w,
+                                  height: 80.h,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                top: -6,
+                                right: -6,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() => _bottleImages.removeAt(i));
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black.withOpacity(0.6),
+                                    ),
+                                    padding: EdgeInsets.all(4.r),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 16.r,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                  ] else ...[
+                    Center(
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.camera_alt_outlined,
+                            size: 28.sp,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 6.h),
+                          Text(
+                            'No bottle photos yet',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                  ],
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CommonButton(
+                          buttonValue: 'Take Photo',
+                          isfullWidth: true,
+                          onTap: _takeBottlePhoto,
+                          textStyle: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: CommonButton(
+                          buttonValue: 'Gallery',
+                          isfullWidth: true,
+                          onTap: _pickBottleFromGallery,
+                          backgroundColor: Colors.white,
+                          outlineColor: AllColors.primaryColor,
+                          textStyle: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11.sp,
+                            color: AllColors.primaryColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

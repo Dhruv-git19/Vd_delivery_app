@@ -1,6 +1,6 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:dotted_border/dotted_border.dart';
 
 class CommonDottedBox extends StatelessWidget {
   final Widget child;
@@ -18,11 +18,12 @@ class CommonDottedBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: DottedBorder(
-        color: Colors.grey.shade400,
-        strokeWidth: 1.2.w,
-        dashPattern: [6.w, 3.w],
-        borderType: BorderType.RRect,
-        radius: Radius.circular(10.r),
+        options: RoundedRectDottedBorderOptions(
+          radius: Radius.circular(10.r),
+          color: Colors.grey.shade400,
+          strokeWidth: 1.2.w,
+          dashPattern: [6.w, 3.w],
+        ),
         child: Container(
           padding: paddding,
           width: width ?? double.infinity,

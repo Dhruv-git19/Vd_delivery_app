@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/model/base_api_response.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/common_widgets/common_appbar.dart';
 import '../../core/utils/common_widgets/common_button.dart';
+import '../../services/dio_http.dart';
 import '../../widget/snack_bar.dart';
 import 'provider/delivery_details_provider.dart';
 import 'widgets/detail_container.dart';
@@ -450,37 +452,6 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
     });
 
     try {
-      final provider = Provider.of<DeliveryDetailsProvider>(
-        context,
-        listen: false,
-      );
-      final details = provider.details;
-
-      final rawLat = details?['address']?['latitude'];
-      final rawLng = details?['address']?['longitude'];
-
-      double? destLat;
-      double? destLng;
-
-      if (rawLat is String) {
-        destLat = double.tryParse(rawLat);
-      } else if (rawLat is num) {
-        destLat = rawLat.toDouble();
-      }
-
-      if (rawLng is String) {
-        destLng = double.tryParse(rawLng);
-      } else if (rawLng is num) {
-        destLng = rawLng.toDouble();
-      }
-
-      if (destLat == null || destLng == null) {
-        MySnackBar.showSnackBar(
-          context,
-          'Destination coordinates not available',
-        );
-        return;
-      }
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -500,14 +471,29 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
 
       final originLat = position.latitude;
       final originLng = position.longitude;
-      final distanceInMeters = Geolocator.distanceBetween(
-        originLat,
-        originLng,
-        destLat,
-        destLng,
+
+      // Call backend to verify arrival
+      if (widget.orderId == null) {
+        MySnackBar.showSnackBar(context, 'Order id not available');
+        return;
+      }
+
+      final dio = DioHttp();
+      final resp = await dio.verifyDeliveryLocation(
+        context,
+        orderId: widget.orderId!.toString(),
+        type: widget.type ?? 'cart',
+        currentLat: originLat,
+        currentLng: originLng,
       );
 
-      if (distanceInMeters <= 100) {
+      final apiResponse = BaseApiResponse<Map<String, dynamic>>.fromJson(
+        resp.data,
+        (data) => data as Map<String, dynamic>,
+      );
+
+      if (apiResponse.dataResponse.returnCode == 0) {
+        // Success — navigate to confirm delivery screen
         context.push(
           AppRoutes.confirmDeliveryScreen,
           extra: {'id': widget.orderId, 'type': widget.type},
@@ -515,7 +501,9 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
       } else {
         MySnackBar.showSnackBar(
           context,
-          'Please reach the delivery location to confirm.',
+          apiResponse.dataResponse.description.isNotEmpty
+              ? apiResponse.dataResponse.description
+              : 'Unable to verify arrival',
         );
       }
     } catch (e) {

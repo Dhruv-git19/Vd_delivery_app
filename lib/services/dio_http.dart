@@ -140,8 +140,30 @@ class DioHttp {
       data: {
         "userName": userName,
         "otp": otp,
-        "roleUniqueIds": "DELIVERY_PARTNER",
+        "roleUniqueIds": ["DELIVERY_PARTNER"],
       },
+      wrapData: true,
+    );
+  }
+
+  Future<Response> verifyDeliveryLocation(
+    BuildContext context, {
+    required String orderId,
+    required String type,
+    required double currentLat,
+    required double currentLng,
+  }) async {
+    final data = {
+      "orderId": orderId,
+      "type": type,
+      "currentLat": currentLat,
+      "currentLng": currentLng,
+    };
+
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.verifyDeliveryLocation,
+      data: data,
       wrapData: true,
     );
   }
@@ -151,6 +173,37 @@ class DioHttp {
       context: context,
       endpoint: ApiEndpoint.getDeliveryPartnerOrderHistory,
       data: {"deliveryStatus": "DELIVERED", "page": 1, "pageSize": 20},
+      wrapData: true,
+    );
+  }
+
+  Future<Response> getAllAreas(
+    BuildContext context, {
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.getAllAreas,
+      data: {"page": page, "pageSize": pageSize},
+      wrapData: true,
+    );
+  }
+
+  Future<Response> submitSubscriptionBottleCount(
+    BuildContext context, {
+    required List<String> uploadedFileUrls,
+    required int subscriptionId,
+    required int takenBottleCount,
+  }) async {
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.submitSubscriptionBottleCount,
+      data: {
+        "uploadedFileUrls": uploadedFileUrls,
+        "subscriptionId": subscriptionId,
+        "takenBottleCount": takenBottleCount,
+      },
       wrapData: true,
     );
   }
@@ -246,6 +299,7 @@ class DioHttp {
     required String idPhotoUrl,
     required String drivingLicenseUrl,
     required String vehicleRegistrationUrl,
+    required List<int> areaIds,
   }) async {
     final data = {
       "fullName": fullName,
@@ -255,6 +309,7 @@ class DioHttp {
       "vehicleRegistrationUrl": vehicleRegistrationUrl,
       "drivingLicenseUrl": drivingLicenseUrl,
       "idPhotoUrl": idPhotoUrl,
+      "areadIds": areaIds,
     };
 
     return _postRequest(

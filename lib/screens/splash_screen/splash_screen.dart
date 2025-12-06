@@ -36,20 +36,10 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: AppColor.secondaryColor,
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.fire_truck_outlined, size: 28.r, color: Colors.white),
-            SizedBox(height: 8.h),
-            Text(
-              "Veedasip Delivery",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+        child: Image.asset(
+          'assets/images/DeliveryVeedasipLogo.png',
+          width: 300.w,
+          height: 300.h,
         ),
       ),
     );

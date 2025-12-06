@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:provider/provider.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_icon_backg_cont.dart';
+import 'package:vedasip_delivery_app/screens/home_screen/provider/homeProvider.dart';
 
 class CustomTab extends StatelessWidget {
   const CustomTab({super.key});
@@ -32,10 +33,7 @@ class CustomTab extends StatelessWidget {
             indicatorSize: TabBarIndicatorSize.tab,
             labelColor: Colors.white,
             unselectedLabelColor: AllColors.primaryColor,
-            labelStyle: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 12.sp,
-            ),
+            labelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.sp),
             unselectedLabelStyle: TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 12.sp,
@@ -178,7 +176,15 @@ class _QrPaymentMethod extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
-                        onTap: () {
+                        onTap: () async {
+                          // Try to refresh HomeProvider if available, then navigate home
+                          try {
+                            final homeProvider = Provider.of<HomeProvider>(
+                              context,
+                              listen: false,
+                            );
+                            await homeProvider.fetchData(context);
+                          } catch (_) {}
                           context.go(AppRoutes.homeScreen);
                         },
                       ),
@@ -294,7 +300,14 @@ class _OtherPaymentMethod extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
-                onTap: () {
+                onTap: () async {
+                  try {
+                    final homeProvider = Provider.of<HomeProvider>(
+                      context,
+                      listen: false,
+                    );
+                    await homeProvider.fetchData(context);
+                  } catch (_) {}
                   context.go(AppRoutes.homeScreen);
                 },
               ),

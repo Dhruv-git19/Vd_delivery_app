@@ -1,6 +1,6 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:dotted_border/dotted_border.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
 // (no extra icon background widget required here)
@@ -42,11 +42,12 @@ class DottedUploadBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DottedBorder(
-      borderType: BorderType.RRect,
-      dashPattern: const [5, 3],
-      strokeWidth: 1,
-      color: borderColor,
-      radius: Radius.circular(borderRadius.r),
+      options: RoundedRectDottedBorderOptions(
+        radius: Radius.circular(borderRadius.r),
+        dashPattern: const [5, 3],
+        strokeWidth: 1,
+        color: borderColor,
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: backgroundColor ?? Colors.white,
