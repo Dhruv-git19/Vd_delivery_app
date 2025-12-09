@@ -26,19 +26,25 @@ class DetailContainer extends StatelessWidget {
     final trimmedName = name.trim();
     final initials = trimmedName.isNotEmpty
         ? trimmedName
-              .split(RegExp(r'\s+'))
-              .where((p) => p.isNotEmpty)
-              .map((p) => p[0])
-              .take(2)
-              .join()
-              .toUpperCase()
+            .split(RegExp(r'\s+'))
+            .where((p) => p.isNotEmpty)
+            .map((p) => p[0])
+            .take(2)
+            .join()
+            .toUpperCase()
         : '?';
     return Container(
-      padding: EdgeInsets.all(10.r),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: AllColors.deliverydetailBoundary),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,19 +52,29 @@ class DetailContainer extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 20.r,
-                backgroundColor: const Color(0xFFE6F0FF),
-                child: Text(
-                  initials,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: primaryColor,
+              Container(
+                padding: EdgeInsets.all(2.r),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: primaryColor.withValues(alpha: 0.2),
+                    width: 2,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 24.r,
+                  backgroundColor: primaryColor.withValues(alpha: 0.1),
+                  child: Text(
+                    initials,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor,
+                    ),
                   ),
                 ),
               ),
-              SizedBox(width: 10.w),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,12 +82,30 @@ class DetailContainer extends StatelessWidget {
                     Text(
                       name,
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: Colors.black87,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 2.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        customerType.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -79,21 +113,21 @@ class DetailContainer extends StatelessWidget {
             ],
           ),
 
-          SizedBox(height: 10.h),
-          Divider(
-            indent: 10.w,
-            endIndent: 10.w,
-            color: Colors.grey[200],
-            height: 1,
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.h),
+            child: Divider(
+              height: 1,
+              color: Colors.grey.shade100,
+            ),
           ),
-          SizedBox(height: 10.h),
+
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
                 Icons.location_on_outlined,
-                color: Colors.grey[600],
-                size: 24.r,
+                color: Colors.grey.shade600,
+                size: 20.r,
               ),
               SizedBox(width: 8.w),
               Expanded(
@@ -103,9 +137,9 @@ class DetailContainer extends StatelessWidget {
                     Text(
                       'Delivery Address',
                       style: TextStyle(
-                        fontSize: 10.sp,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey[600],
+                        color: Colors.grey.shade500,
                       ),
                     ),
                     Text(
@@ -113,7 +147,8 @@ class DetailContainer extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black,
+                        color: Colors.grey.shade800,
+                        height: 1.4,
                       ),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -134,12 +169,21 @@ class DetailContainer extends StatelessWidget {
                   value: distance,
                 ),
               ),
-              SizedBox(width: 8.w),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _DetailStat(
+                  icon: Icons.access_time_rounded,
+                  label: 'Duration',
+                  value: duration,
+                ),
+              ),
+              SizedBox(width: 12.w),
               Expanded(
                 child: _DetailStat(
                   icon: Icons.currency_rupee_outlined,
                   label: 'Amount',
                   value: amount,
+                  isAmount: true,
                 ),
               ),
             ],
@@ -154,11 +198,13 @@ class _DetailStat extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final bool isAmount;
 
   const _DetailStat({
     required this.icon,
     required this.label,
     required this.value,
+    this.isAmount = false,
   });
 
   @override
@@ -166,40 +212,45 @@ class _DetailStat extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(10.r),
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.grey.shade100),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16.r, color: const Color(0xFF6E6E6E)),
-          SizedBox(width: 6.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 14.r,
+                color: isAmount ? primaryColor : Colors.grey.shade500,
+              ),
+              SizedBox(width: 4.w),
+              Expanded(
+                child: Text(
                   label,
                   style: TextStyle(
                     fontSize: 10.sp,
-                    color: const Color(0xFF9C9C9C),
-                    fontWeight: FontWeight.w400,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 2.h),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF4A4A4A),
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+              ),
+            ],
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: isAmount ? primaryColor : Colors.grey.shade800,
+              fontWeight: FontWeight.bold,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
