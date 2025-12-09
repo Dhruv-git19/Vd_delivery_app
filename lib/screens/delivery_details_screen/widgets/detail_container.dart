@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:vedasip_delivery_app/core/theme/theme.dart';
-import 'package:vedasip_delivery_app/core/utils/common_widgets/common_icon_backg_cont.dart';
+
+import '../../../core/theme/theme.dart';
 
 class DetailContainer extends StatelessWidget {
   final String name;
@@ -75,16 +75,6 @@ class DetailContainer extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-              SizedBox(width: 6.w),
-              CommonIconBackgCont(
-                icon: Icon(Icons.call, color: primaryColor),
-                backgroundColor: const Color(0xFFF3F4F6),
-              ),
-              SizedBox(width: 6.w),
-              CommonIconBackgCont(
-                icon: Icon(Icons.message_outlined, color: primaryColor),
-                backgroundColor: const Color(0xFFF3F4F6),
               ),
             ],
           ),

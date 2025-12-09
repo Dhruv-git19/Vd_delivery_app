@@ -12,12 +12,14 @@ class CommonTextfield extends StatelessWidget {
   final double? width;
   final Color? fillColor;
   final Color? borderColor;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
   final Icon? icon;
   final double? radius;
   final bool enabled;
   final ValueChanged<String>? onChanged;
   final EdgeInsetsGeometry? contentPadding;
-  
+
   const CommonTextfield({
     super.key,
     required this.hintText,
@@ -30,6 +32,8 @@ class CommonTextfield extends StatelessWidget {
     this.fillColor,
     this.borderColor,
     this.icon,
+    this.prefixIcon,
+    this.suffixIcon,
     this.radius,
     this.enabled = true,
     this.onChanged,
@@ -62,8 +66,11 @@ class CommonTextfield extends StatelessWidget {
               contentPadding:
                   contentPadding ??
                   EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              prefixIcon: prefixIcon,
+              suffixIcon: suffixIcon,
               hint: hintText != null
                   ? Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           hintText!,

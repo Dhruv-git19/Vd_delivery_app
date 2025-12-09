@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:vedasip_delivery_app/core/theme/theme.dart';
-import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
+
+import '../../theme/theme.dart';
 
 class CommonDeliveryContainer extends StatelessWidget {
   final String name;
@@ -30,7 +30,6 @@ class CommonDeliveryContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: height ?? 145.h,
       width: width ?? double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20.r),
@@ -74,7 +73,7 @@ class CommonDeliveryContainer extends StatelessWidget {
             children: [
               _iconText(Icons.access_time_outlined, time),
               SizedBox(width: 20.w),
-              _iconText(Icons.location_on_outlined, distance),
+              _iconText(Icons.location_on_outlined, '$distance km'),
               SizedBox(width: 20.w),
               _iconText(Icons.currency_rupee, price),
             ],
@@ -113,7 +112,7 @@ class CommonDeliveryContainer extends StatelessWidget {
   Widget _iconText(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 17.r, color: const Color.fromARGB(255, 102, 102, 102)),
+        Icon(icon, size: 18.r, color: const Color.fromARGB(255, 102, 102, 102)),
         SizedBox(width: 4.w),
         Text(
           text,

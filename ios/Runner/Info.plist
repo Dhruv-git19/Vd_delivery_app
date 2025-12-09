@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to location when open to show delivery routes.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to take photos of deliveries.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to upload delivery photos.</string>
 </dict>
 </plist>

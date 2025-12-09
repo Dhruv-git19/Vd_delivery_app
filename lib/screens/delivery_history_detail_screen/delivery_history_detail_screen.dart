@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:vedasip_delivery_app/core/theme/theme.dart';
-import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
-import 'package:vedasip_delivery_app/screens/delivery_history_detail_screen/provider/specific_delivery_provider.dart';
-import 'package:vedasip_delivery_app/screens/delivery_details_screen/widgets/s3_network_image.dart';
+
+import '../../core/theme/theme.dart';
+import '../../core/utils/common_widgets/common_appbar.dart';
+import '../delivery_details_screen/widgets/s3_network_image.dart';
+import 'model/specific_delivery_model.dart';
+import 'provider/specific_delivery_provider.dart';
 
 class DeliveryHistoryDetailScreen extends StatefulWidget {
   final int orderId;
@@ -41,91 +43,118 @@ class _DeliveryHistoryDetailScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: verificationColor,
-      appBar: CommonAppbar(
-        title: 'Delivery Details',
-        code: '#${widget.orderType.toUpperCase()}${widget.orderId}',
-      ),
-      body: Consumer<SpecificDeliveryProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      backgroundColor: Colors.grey[50],
+      // appBar:
+      body: Column(
+        children: [
+          CommonAppbar(
+            title: 'Delivery Details',
+            code: '#${widget.orderType.toUpperCase()}${widget.orderId}',
+          ),
+          Expanded(
+            child: Consumer<SpecificDeliveryProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (provider.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 48.r, color: Colors.red),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Error loading delivery details',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
+                if (provider.error != null) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 48.r,
+                          color: Colors.red.shade400,
+                        ),
+                        SizedBox(height: 16.h),
+                        Text(
+                          'Error loading details',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                        SizedBox(height: 12.h),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            provider.fetchSpecificDelivery(
+                              context,
+                              orderId: widget.orderId,
+                              orderType: widget.orderType,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AllColors.primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24.w,
+                              vertical: 12.h,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('Retry'),
+                        ),
+                      ],
                     ),
+                  );
+                }
+
+                final data = provider.deliveryData;
+                if (data == null) {
+                  return const Center(child: Text('No data available'));
+                }
+
+                return SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w,vertical: 10.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildCustomerCard(data),
+                      SizedBox(height: 10.h),
+
+                      _buildStatusTimeline(data),
+                      SizedBox(height: 10.h),
+
+                      _buildOrderItems(data),
+                      SizedBox(height: 10.h),
+
+                      _buildAddressCard(data),
+                      SizedBox(height: 10.h),
+
+                      if (data.deliveryProof != null) ...[
+                        _buildDeliveryProof(data),
+                        SizedBox(height: 20.h),
+                      ],
+                    ],
                   ),
-                  SizedBox(height: 8.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      provider.fetchSpecificDelivery(
-                        context,
-                        orderId: widget.orderId,
-                        orderType: widget.orderType,
-                      );
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final data = provider.deliveryData;
-          if (data == null) {
-            return const Center(child: Text('No data available'));
-          }
-
-          return SingleChildScrollView(
-            padding: EdgeInsets.all(16.r),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildCustomerCard(data),
-                SizedBox(height: 16.h),
-
-                _buildStatusTimeline(data),
-                SizedBox(height: 16.h),
-
-                _buildOrderItems(data),
-                SizedBox(height: 16.h),
-
-                _buildAddressCard(data),
-                SizedBox(height: 16.h),
-
-                if (data.deliveryProof != null) _buildDeliveryProof(data),
-              ],
+                );
+              },
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildCustomerCard(data) {
+  Widget _buildCustomerCard(SpecificDeliveryResponse data) {
     final customer = data.customer;
     if (customer == null) return const SizedBox.shrink();
 
     return Container(
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
@@ -135,12 +164,19 @@ class _DeliveryHistoryDetailScreenState
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 24.r,
-                backgroundColor: primaryColor.withOpacity(0.1),
-                child: Icon(Icons.person, color: primaryColor, size: 28.r),
+              Container(
+                padding: EdgeInsets.all(8.r),
+                decoration: BoxDecoration(
+                  color: AllColors.primaryColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.person_outline_rounded,
+                  color: AllColors.primaryColor,
+                  size: 24.r,
+                ),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,32 +184,32 @@ class _DeliveryHistoryDetailScreenState
                     Text(
                       customer.fullName,
                       style: TextStyle(
-                        fontSize: 18.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: AllColors.deliverydetailfontColor,
+                        color: Colors.black87,
                       ),
                     ),
-                    SizedBox(height: 4.h),
                     Text(
                       customer.mobileNumber,
                       style: TextStyle(
-                        fontSize: 14.sp,
-                        color: Colors.grey[600],
+                        fontSize: 12.sp,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: AllColors.primaryColor.withOpacity(0.1),
+                  color: AllColors.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
                   data.orderDetails?.orderStatus ?? 'N/A',
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
                     color: AllColors.primaryColor,
                   ),
@@ -186,19 +222,19 @@ class _DeliveryHistoryDetailScreenState
     );
   }
 
-  Widget _buildStatusTimeline(data) {
+  Widget _buildStatusTimeline(SpecificDeliveryResponse data) {
     final deliveryDetails = data.deliveryDetails;
     if (deliveryDetails == null) return const SizedBox.shrink();
 
     return Container(
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
@@ -206,15 +242,25 @@ class _DeliveryHistoryDetailScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Delivery Timeline',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              color: AllColors.deliverydetailfontColor,
-            ),
+          Row(
+            children: [
+              Icon(
+                Icons.timeline_rounded,
+                size: 20.r,
+                color: Colors.grey.shade700,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'Delivery Timeline',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 12.h),
           _buildTimelineItem(
             'Assigned',
             _formatDateTime(deliveryDetails.assignedOn),
@@ -248,25 +294,34 @@ class _DeliveryHistoryDetailScreenState
         Column(
           children: [
             Container(
-              width: 20.w,
-              height: 20.w,
+              width: 16.w,
+              height: 16.w,
               decoration: BoxDecoration(
                 color: isCompleted ? AllColors.primaryColor : Colors.grey[300],
                 shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: isCompleted
+                        ? AllColors.primaryColor.withValues(alpha: 0.3)
+                        : Colors.transparent,
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],
               ),
-              child: isCompleted
-                  ? Icon(Icons.check, color: Colors.white, size: 12.r)
-                  : null,
             ),
             if (!isLast)
               Container(
                 width: 2.w,
                 height: 40.h,
-                color: isCompleted ? AllColors.primaryColor : Colors.grey[300],
+                color: isCompleted
+                    ? AllColors.primaryColor.withValues(alpha: 0.5)
+                    : Colors.grey[300],
               ),
           ],
         ),
-        SizedBox(width: 12.w),
+        SizedBox(width: 16.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,7 +331,7 @@ class _DeliveryHistoryDetailScreenState
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
-                  color: AllColors.deliverydetailfontColor,
+                  color: Colors.black87,
                 ),
               ),
               SizedBox(height: 4.h),
@@ -284,7 +339,7 @@ class _DeliveryHistoryDetailScreenState
                 time,
                 style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
               ),
-              if (!isLast) SizedBox(height: 12.h),
+              if (!isLast) SizedBox(height: 16.h),
             ],
           ),
         ),
@@ -292,19 +347,19 @@ class _DeliveryHistoryDetailScreenState
     );
   }
 
-  Widget _buildOrderItems(data) {
+  Widget _buildOrderItems(SpecificDeliveryResponse data) {
     final items = data.orderDetails?.cart?.items ?? [];
     if (items.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
@@ -315,23 +370,45 @@ class _DeliveryHistoryDetailScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Order Items',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AllColors.deliverydetailfontColor,
-                ),
+              Row(
+                children: [
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 20.r,
+                    color: Colors.grey.shade700,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'Order Items',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                '${items.length} items',
-                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  '${items.length} items',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
               ),
             ],
           ),
-          SizedBox(height: 12.h),
-          ...items.map((item) => _buildOrderItemCard(item)).toList(),
-          Divider(height: 24.h),
+          SizedBox(height: 10.h),
+          ...items.map((item) => _buildOrderItemCard(item)),
+          Divider(height: 1, color: Colors.grey.shade200),
+          SizedBox(height: 6.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -339,14 +416,14 @@ class _DeliveryHistoryDetailScreenState
                 'Total Amount',
                 style: TextStyle(
                   fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AllColors.deliverydetailfontColor,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
                 ),
               ),
               Text(
                 '₹${data.orderDetails?.totalAmount ?? '0'}',
                 style: TextStyle(
-                  fontSize: 18.sp,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
                   color: AllColors.primaryColor,
                 ),
@@ -358,28 +435,35 @@ class _DeliveryHistoryDetailScreenState
     );
   }
 
-  Widget _buildOrderItemCard(item) {
+  Widget _buildOrderItemCard(CartItem item) {
     final imageUrl = item.productImages.isNotEmpty
         ? item.productImages.first.imageUrl
         : null;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(12.r),
+      margin: EdgeInsets.only(bottom: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8.r),
-            child: S3NetworkImage(
-              imageUrl: imageUrl,
-              width: 60.w,
-              height: 60.w,
-              fit: BoxFit.cover,
+            child: GestureDetector(
+              onTap: () {
+                if (imageUrl != null) {
+                  _showImageDialog(context, imageUrl);
+                }
+              },
+              child: S3NetworkImage(
+                imageUrl: imageUrl,
+                width: 60.w,
+                height: 60.w,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           SizedBox(width: 12.w),
@@ -392,18 +476,29 @@ class _DeliveryHistoryDetailScreenState
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
-                    color: AllColors.deliverydetailfontColor,
+                    color: Colors.black87,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 2.h),
                 Text(
                   item.variantName,
                   style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 4.h),
-                Text(
-                  'Qty: ${item.quantity}',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4.r),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Text(
+                    'Qty: ${item.quantity}',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -416,13 +511,13 @@ class _DeliveryHistoryDetailScreenState
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  color: AllColors.deliverydetailfontColor,
+                  color: Colors.black87,
                 ),
               ),
-              SizedBox(height: 4.h),
+              SizedBox(height: 2.h),
               Text(
-                '₹${item.unitPrice}/unit',
-                style: TextStyle(fontSize: 11.sp, color: Colors.grey[600]),
+                '₹${item.unitPrice}/item',
+                style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -431,19 +526,19 @@ class _DeliveryHistoryDetailScreenState
     );
   }
 
-  Widget _buildAddressCard(data) {
+  Widget _buildAddressCard(SpecificDeliveryResponse data) {
     final address = data.address;
     if (address == null) return const SizedBox.shrink();
 
     return Container(
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
@@ -454,7 +549,7 @@ class _DeliveryHistoryDetailScreenState
           Row(
             children: [
               Icon(
-                Icons.location_on,
+                Icons.location_on_outlined,
                 color: AllColors.primaryColor,
                 size: 24.r,
               ),
@@ -464,68 +559,81 @@ class _DeliveryHistoryDetailScreenState
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  color: AllColors.deliverydetailfontColor,
+                  color: Colors.black87,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 8.h),
           Text(
             address.fullAddress,
             style: TextStyle(
               fontSize: 14.sp,
-              color: AllColors.deliverydetailfontColor,
+              color: Colors.black87,
+              height: 1.4,
             ),
           ),
-          SizedBox(height: 8.h),
           Text(
             '${address.city}, ${address.state}, ${address.country} - ${address.postalCode}',
-            style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDeliveryProof(data) {
+  Widget _buildDeliveryProof(SpecificDeliveryResponse data) {
     final proof = data.deliveryProof!;
 
     return Container(
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Delivery Proof',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              color: AllColors.deliverydetailfontColor,
-            ),
+          Row(
+            children: [
+              Icon(
+                Icons.verified_outlined,
+                color: AllColors.primaryColor,
+                size: 24.r,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'Delivery Proof',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 10.h),
           if (proof.proofUrls.isNotEmpty)
             SizedBox(
               height: 120.h,
-              child: ListView.builder(
+              child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: proof.proofUrls.length,
+                separatorBuilder: (context, index) => SizedBox(width: 12.w),
                 itemBuilder: (context, index) {
-                  return Container(
-                    margin: EdgeInsets.only(right: 12.w),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.r),
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: GestureDetector(
+                      onTap: () {
+                        _showImageDialog(context, proof.proofUrls[index]);
+                      },
                       child: S3NetworkImage(
                         imageUrl: proof.proofUrls[index],
                         width: 120.w,
@@ -537,49 +645,67 @@ class _DeliveryHistoryDetailScreenState
                 },
               ),
             ),
-          SizedBox(height: 12.h),
-          if (proof.distanceMeters != null)
-            _buildInfoRow(
-              Icons.social_distance,
-              'Distance from delivery point',
-              '${proof.distanceMeters} meters',
+          SizedBox(height: 10.h),
+          Container(
+            padding: EdgeInsets.all(10.r),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.grey[200]!),
             ),
-          if (proof.exchangeBottles != null)
-            _buildInfoRow(
-              Icons.recycling,
-              'Empty bottles collected',
-              '${proof.exchangeBottles} bottles',
+            child: Column(
+              children: [
+                if (proof.distanceMeters != null)
+                  _buildInfoRow(
+                    Icons.social_distance,
+                    'Distance from point',
+                    '${proof.distanceMeters} m',
+                  ),
+                if (proof.exchangeBottles != null)
+                  _buildInfoRow(
+                    Icons.recycling_rounded,
+                    'Bottles collected',
+                    '${proof.exchangeBottles}',
+                  ),
+                if (proof.submittedOn != null)
+                  _buildInfoRow(
+                    Icons.access_time_rounded,
+                    'Submitted on',
+                    _formatDateTime(proof.submittedOn),
+                    isLast: true,
+                  ),
+              ],
             ),
-          if (proof.submittedOn != null)
-            _buildInfoRow(
-              Icons.access_time,
-              'Submitted on',
-              _formatDateTime(proof.submittedOn),
-            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(
+    IconData icon,
+    String label,
+    String value, {
+    bool isLast = false,
+  }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 12.h),
       child: Row(
         children: [
-          Icon(icon, size: 18.r, color: Colors.grey[600]),
+          Icon(icon, size: 16.r, color: Colors.grey[600]),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
               label,
-              style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
             ),
           ),
           Text(
             value,
             style: TextStyle(
-              fontSize: 13.sp,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
-              color: AllColors.deliverydetailfontColor,
+              color: Colors.black87,
             ),
           ),
         ],
@@ -591,9 +717,55 @@ class _DeliveryHistoryDetailScreenState
     if (dateString == null) return 'N/A';
     try {
       final date = DateTime.parse(dateString);
-      return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+      return '${date.day}/${date.month}/${date.year} • ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
     } catch (e) {
       return 'N/A';
     }
+  }
+
+  void _showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.all(12.r),
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            Container(
+              width: double.infinity,
+              constraints: BoxConstraints(maxHeight: 0.7.sh),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16.r),
+                child: InteractiveViewer(
+                  child: S3NetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8.r),
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.close, color: Colors.white, size: 20.r),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

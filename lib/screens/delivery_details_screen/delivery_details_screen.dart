@@ -97,8 +97,6 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
       final productName =
           item['productVariant']?['product']?['productName'] ?? 'Item';
       final qty = item['quantity']?.toString() ?? '0';
-      final price = item['price']?.toString() ?? '0';
-
       final productImages =
           item['productVariant']?['product']?['productImages'] as List?;
       final imageUrl = (productImages != null && productImages.isNotEmpty)
@@ -135,10 +133,6 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
                   ),
                 ],
               ),
-            ),
-            Text(
-              '₹$price',
-              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -447,6 +441,11 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   }
 
   Future<void> _checkArrivalAndNavigate(BuildContext context) async {
+    context.push(
+      AppRoutes.confirmDeliveryScreen,
+      extra: {'id': widget.orderId, 'type': widget.type},
+    );
+    return;
     setState(() {
       _isCheckingArrival = true;
     });

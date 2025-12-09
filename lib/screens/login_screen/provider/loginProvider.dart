@@ -1,10 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:vedasip_delivery_app/widget/snack_bar.dart';
-import 'package:vedasip_delivery_app/services/dio_http.dart';
-import 'package:vedasip_delivery_app/core/model/base_api_response.dart';
-import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
+
+import '../../../core/model/base_api_response.dart';
+import '../../../services/dio_http.dart';
+import '../../../storage/flutter_secure_storage.dart';
+import '../../../widget/snack_bar.dart';
 
 class LoginProvider with ChangeNotifier {
   final DioHttp _dioHttp = DioHttp();

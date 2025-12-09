@@ -19,7 +19,6 @@ if (envFile.exists()) {
         val trimmedLine = line.trim()
         if (trimmedLine.startsWith("GOOGLE_MAPS_API_KEY=") && !trimmedLine.startsWith("#")) {
             googleMapsApiKey = trimmedLine.substring("GOOGLE_MAPS_API_KEY=".length).trim()
-            println("Google Maps API Key loaded: ${if (googleMapsApiKey.isNotEmpty()) "YES" else "NO"}")
         }
     }
 }

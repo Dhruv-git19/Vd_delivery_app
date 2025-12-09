@@ -23,7 +23,7 @@ class CommonAppbar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
-      toolbarHeight: 72.h,
+      toolbarHeight: code != null ? 62.h : 56.h,
       flexibleSpace: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -65,7 +65,7 @@ class CommonAppbar extends StatelessWidget implements PreferredSizeWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 17.sp,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
                       color: Colors.black87,
                     ),
@@ -75,7 +75,7 @@ class CommonAppbar extends StatelessWidget implements PreferredSizeWidget {
                     Text(
                       code!,
                       style: TextStyle(
-                        fontSize: 11.sp,
+                        fontSize: 12.sp,
                         color: Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
@@ -109,5 +109,5 @@ class CommonAppbar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(72.h);
+  Size get preferredSize => Size.fromHeight(code != null ? 62.h : 56.h);
 }
