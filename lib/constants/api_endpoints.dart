@@ -9,6 +9,8 @@ enum ApiEndpoint {
   getSpecificOrderDetails('/getSpecificOrderDetails'),
   submitOrderProof('/submitOrderProof'),
   deleteMyAccount('/deleteMyAccount'),
+  checkOrderPaymentMode('/checkOrderPaymentMode'),
+  completeDeliveryPayment('/completeDeliveryPayment'),
   submitSubscriptionBottleCount('/submitSubscriptionBottleCount'),
   verifyDeliveryLocation('/verifyDeliveryLocation'),
   registerDeliveryPartner('/registerDeliveryPartner'),

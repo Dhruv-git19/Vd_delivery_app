@@ -8,9 +8,51 @@ import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dar
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_icon_backg_cont.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/provider/homeProvider.dart';
+import 'package:vedasip_delivery_app/services/dio_http.dart';
+import 'package:vedasip_delivery_app/widget/snack_bar.dart';
+
+String normalizePaymentMethod(String? method) {
+  if (method == null) return 'CASH';
+  final lower = method.toString().toLowerCase().trim();
+
+  const onlineKeys = [
+    'online',
+    'upi',
+    'card',
+    'digital',
+    'e-payment',
+    'epayment',
+    'netbanking',
+  ];
+  for (final k in onlineKeys) {
+    if (lower.contains(k)) return 'ONLINE';
+  }
+
+  const cashKeys = [
+    'cash',
+    'cod',
+    'pod',
+    'pay_on_delivery',
+    'cash_on_delivery',
+    'pay on delivery',
+  ];
+  for (final k in cashKeys) {
+    if (lower.contains(k)) return 'CASH';
+  }
+
+  return 'CASH';
+}
 
 class CustomTab extends StatelessWidget {
-  const CustomTab({super.key});
+  final Map<String, dynamic>? paymentModeData;
+  final int? orderId;
+  final String? orderType;
+  const CustomTab({
+    super.key,
+    this.paymentModeData,
+    this.orderId,
+    this.orderType,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +92,20 @@ class CustomTab extends StatelessWidget {
           SizedBox(height: 12.h),
           SizedBox(
             height: 320.h,
-            child: const TabBarView(
-              physics: BouncingScrollPhysics(),
-              children: [_QrPaymentMethod(), _OtherPaymentMethod()],
+            child: TabBarView(
+              physics: const BouncingScrollPhysics(),
+              children: [
+                _QrPaymentMethod(
+                  paymentModeData: paymentModeData,
+                  orderId: orderId,
+                  orderType: orderType,
+                ),
+                _OtherPaymentMethod(
+                  paymentModeData: paymentModeData,
+                  orderId: orderId,
+                  orderType: orderType,
+                ),
+              ],
             ),
           ),
         ],
@@ -61,8 +114,87 @@ class CustomTab extends StatelessWidget {
   }
 }
 
-class _QrPaymentMethod extends StatelessWidget {
-  const _QrPaymentMethod();
+class _QrPaymentMethod extends StatefulWidget {
+  final Map<String, dynamic>? paymentModeData;
+  final int? orderId;
+  final String? orderType;
+  const _QrPaymentMethod({this.paymentModeData, this.orderId, this.orderType});
+
+  @override
+  State<_QrPaymentMethod> createState() => _QrPaymentMethodState();
+}
+
+class _QrPaymentMethodState extends State<_QrPaymentMethod> {
+  bool _isLoading = false;
+  String? _error;
+
+  Future<void> _handlePaymentReceived() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final dio = DioHttp();
+      final serverRaw =
+          widget.paymentModeData != null &&
+              widget.paymentModeData!['paymentMode'] != null
+          ? widget.paymentModeData!['paymentMode']
+          : 'ONLINE';
+      final serverMode = normalizePaymentMethod(serverRaw);
+
+      if (serverMode == 'ONLINE') {
+        try {
+          final homeProvider = Provider.of<HomeProvider>(
+            context,
+            listen: false,
+          );
+          await homeProvider.fetchData(context);
+        } catch (_) {}
+        if (mounted) context.go(AppRoutes.homeScreen);
+      } else {
+        // Server expects POD/CASH: for QR flow assume online payment via QR, so send ONLINE
+        final paymentToSend = 'ONLINE';
+        final resp = await dio.completeDeliveryPayment(
+          context,
+          orderId: widget.orderId?.toString() ?? '',
+          paymentMethod: paymentToSend,
+        );
+
+        final dataResponse = resp.data['dataResponse'];
+        final returnCode = dataResponse != null
+            ? dataResponse['returnCode']
+            : null;
+        final description = dataResponse != null
+            ? dataResponse['description']
+            : null;
+        if (returnCode == 0) {
+          try {
+            final homeProvider = Provider.of<HomeProvider>(
+              context,
+              listen: false,
+            );
+            await homeProvider.fetchData(context);
+          } catch (_) {}
+          if (mounted) context.go(AppRoutes.homeScreen);
+        } else {
+          final msg = description ?? 'Payment failed';
+          setState(() {
+            _error = msg;
+          });
+          MySnackBar.showSnackBar(context, msg);
+        }
+      }
+      // (handled above inside branches) no duplicate processing here
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,6 +272,11 @@ class _QrPaymentMethod extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 14.h),
+                // if (_error != null)
+                //   Padding(
+                //     padding: const EdgeInsets.symmetric(vertical: 8.0),
+                //     child: Text(_error!, style: TextStyle(color: Colors.red)),
+                //   ),
                 Row(
                   children: [
                     Expanded(
@@ -166,7 +303,9 @@ class _QrPaymentMethod extends StatelessWidget {
                     Expanded(
                       child: CommonButton(
                         isfullWidth: true,
-                        buttonValue: 'Payment received',
+                        buttonValue: _isLoading
+                            ? 'Processing...'
+                            : 'Payment received',
                         padding: EdgeInsets.symmetric(
                           vertical: 8.h,
                           horizontal: 4.w,
@@ -176,17 +315,7 @@ class _QrPaymentMethod extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
-                        onTap: () async {
-                          // Try to refresh HomeProvider if available, then navigate home
-                          try {
-                            final homeProvider = Provider.of<HomeProvider>(
-                              context,
-                              listen: false,
-                            );
-                            await homeProvider.fetchData(context);
-                          } catch (_) {}
-                          context.go(AppRoutes.homeScreen);
-                        },
+                        onTap: _isLoading ? null : _handlePaymentReceived,
                       ),
                     ),
                   ],
@@ -202,8 +331,90 @@ class _QrPaymentMethod extends StatelessWidget {
   }
 }
 
-class _OtherPaymentMethod extends StatelessWidget {
-  const _OtherPaymentMethod();
+class _OtherPaymentMethod extends StatefulWidget {
+  final Map<String, dynamic>? paymentModeData;
+  final int? orderId;
+  final String? orderType;
+  const _OtherPaymentMethod({
+    this.paymentModeData,
+    this.orderId,
+    this.orderType,
+  });
+
+  @override
+  State<_OtherPaymentMethod> createState() => _OtherPaymentMethodState();
+}
+
+class _OtherPaymentMethodState extends State<_OtherPaymentMethod> {
+  bool _isLoading = false;
+  String? _error;
+  String _selectedMethod = 'Cash';
+
+  Future<void> _handlePaymentReceived() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final dio = DioHttp();
+      final serverRaw =
+          widget.paymentModeData != null &&
+              widget.paymentModeData!['paymentMode'] != null
+          ? widget.paymentModeData!['paymentMode']
+          : 'ONLINE';
+      final serverMode = normalizePaymentMethod(serverRaw);
+
+      // If server already expects ONLINE payments, skip API and treat as success
+      if (serverMode == 'ONLINE') {
+        try {
+          final homeProvider = Provider.of<HomeProvider>(
+            context,
+            listen: false,
+          );
+          await homeProvider.fetchData(context);
+        } catch (_) {}
+        if (mounted) context.go(AppRoutes.homeScreen);
+      } else {
+        final paymentToSend = normalizePaymentMethod(_selectedMethod);
+        final resp = await dio.completeDeliveryPayment(
+          context,
+          orderId: widget.orderId?.toString() ?? '',
+          paymentMethod: paymentToSend,
+        );
+        final dataResponse = resp.data['dataResponse'];
+        final returnCode = dataResponse != null
+            ? dataResponse['returnCode']
+            : null;
+        final description = dataResponse != null
+            ? dataResponse['description']
+            : null;
+        if (returnCode == 0) {
+          try {
+            final homeProvider = Provider.of<HomeProvider>(
+              context,
+              listen: false,
+            );
+            await homeProvider.fetchData(context);
+          } catch (_) {}
+          if (mounted) context.go(AppRoutes.homeScreen);
+        } else {
+          final msg = description ?? 'Payment failed';
+          setState(() {
+            _error = msg;
+          });
+          MySnackBar.showSnackBar(context, msg);
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -257,10 +468,18 @@ class _OtherPaymentMethod extends StatelessWidget {
                 spacing: 8.w,
                 runSpacing: 8.h,
                 children: [
-                  _PaymentModeChip(label: 'Cash'),
-                  _PaymentModeChip(label: 'UPI'),
-                  _PaymentModeChip(label: 'Card'),
-                  _PaymentModeChip(label: 'Other'),
+                  for (final method in ['Cash', 'UPI', 'Card', 'Other'])
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedMethod = method;
+                        });
+                      },
+                      child: _PaymentModeChip(
+                        label: method,
+                        selected: _selectedMethod == method,
+                      ),
+                    ),
                 ],
               ),
 
@@ -291,25 +510,21 @@ class _OtherPaymentMethod extends StatelessWidget {
 
               SizedBox(height: 18.h),
 
+              // if (_error != null)
+              //   Padding(
+              //     padding: const EdgeInsets.symmetric(vertical: 8.0),
+              //     child: Text(_error!, style: TextStyle(color: Colors.red)),
+              //   ),
               CommonButton(
                 isfullWidth: true,
-                buttonValue: 'Payment received',
+                buttonValue: _isLoading ? 'Processing...' : 'Payment received',
                 padding: EdgeInsets.symmetric(vertical: 9.h, horizontal: 4.w),
                 textStyle: TextStyle(
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
-                onTap: () async {
-                  try {
-                    final homeProvider = Provider.of<HomeProvider>(
-                      context,
-                      listen: false,
-                    );
-                    await homeProvider.fetchData(context);
-                  } catch (_) {}
-                  context.go(AppRoutes.homeScreen);
-                },
+                onTap: _isLoading ? null : _handlePaymentReceived,
               ),
 
               SizedBox(height: 4.h),
@@ -323,24 +538,29 @@ class _OtherPaymentMethod extends StatelessWidget {
 
 class _PaymentModeChip extends StatelessWidget {
   final String label;
-
-  const _PaymentModeChip({required this.label});
+  final bool selected;
+  const _PaymentModeChip({required this.label, this.selected = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
+        color: selected
+            ? AllColors.primaryColor.withOpacity(0.15)
+            : const Color(0xFFF3F4F6),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(
+          color: selected ? AllColors.primaryColor : Colors.grey.shade300,
+          width: selected ? 2 : 1,
+        ),
       ),
       child: Text(
         label,
         style: TextStyle(
           fontSize: 11.sp,
           fontWeight: FontWeight.w500,
-          color: const Color(0xFF4B5563),
+          color: selected ? AllColors.primaryColor : const Color(0xFF4B5563),
         ),
       ),
     );
