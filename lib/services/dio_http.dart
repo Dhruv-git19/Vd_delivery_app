@@ -156,8 +156,10 @@ class DioHttp {
     final data = {
       "orderId": orderId,
       "type": type,
-      "currentLat": currentLat,
-      "currentLng": currentLng,
+      // "currentLat": currentLat,
+      // "currentLng": currentLng, //24.578961, 73.689943
+      "currentLat": "24.578961",
+      "currentLng": "73.689943",
     };
 
     return _postRequest(
@@ -309,7 +311,7 @@ class DioHttp {
       "vehicleRegistrationUrl": vehicleRegistrationUrl,
       "drivingLicenseUrl": drivingLicenseUrl,
       "idPhotoUrl": idPhotoUrl,
-      "areadIds": areaIds,
+      "areaIds": areaIds,
     };
 
     return _postRequest(
@@ -332,8 +334,10 @@ class DioHttp {
     final data = {
       "orderId": orderId,
       "type": type,
-      "currentLat": currentLat,
-      "currentLng": currentLng,
+      // "currentLat": currentLat,
+      // "currentLng": currentLng,
+      "currentLat": "24.578961",
+      "currentLng": "73.689943",
       "uploadedFileUrls": uploadedFileUrls,
     };
 
@@ -344,6 +348,34 @@ class DioHttp {
     return _postRequest(
       context: context,
       endpoint: ApiEndpoint.submitOrderProof,
+      data: data,
+      wrapData: true,
+    );
+  }
+
+  Future<Response> checkOrderPaymentMode(
+    BuildContext context, {
+    required String orderId,
+    required String type,
+  }) async {
+    final data = {"orderId": orderId, "type": type};
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.checkOrderPaymentMode,
+      data: data,
+      wrapData: true,
+    );
+  }
+
+  Future<Response> completeDeliveryPayment(
+    BuildContext context, {
+    required String orderId,
+    required String paymentMethod,
+  }) async {
+    final data = {"orderId": orderId, "paymentMethod": paymentMethod};
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.completeDeliveryPayment,
       data: data,
       wrapData: true,
     );

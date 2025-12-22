@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -169,8 +170,13 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       final List<String> uploadedUrls = [];
       if (uploadResponse.data['data'] is List) {
         for (var item in uploadResponse.data['data']) {
-          if (item['fileUrl'] != null) {
-            uploadedUrls.add(item['fileUrl']);
+          // support server returning list of strings (urls) or list of objects
+          if (item is String) {
+            uploadedUrls.add(item);
+          } else if (item is Map && item['fileUrl'] != null) {
+            uploadedUrls.add(item['fileUrl'].toString());
+          } else if (item is Map && item['url'] != null) {
+            uploadedUrls.add(item['url'].toString());
           }
         }
       }
@@ -179,7 +185,6 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
         throw Exception('No file URLs returned from upload');
       }
 
-    
       if (widget.type == 'subscription') {
         final bottleCountText = _bottleController.text.trim();
         if (bottleCountText.isNotEmpty && _bottleImages.isNotEmpty) {
@@ -197,8 +202,12 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
           final List<String> bottleUploadedUrls = [];
           if (bottleUploadResponse.data['data'] is List) {
             for (var item in bottleUploadResponse.data['data']) {
-              if (item['fileUrl'] != null) {
-                bottleUploadedUrls.add(item['fileUrl']);
+              if (item is String) {
+                bottleUploadedUrls.add(item);
+              } else if (item is Map && item['fileUrl'] != null) {
+                bottleUploadedUrls.add(item['fileUrl'].toString());
+              } else if (item is Map && item['url'] != null) {
+                bottleUploadedUrls.add(item['url'].toString());
               }
             }
           }
@@ -261,6 +270,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       }
     } catch (e) {
       if (mounted) {
+        log("Error submitting order proof: $e");
         MySnackBar.showSnackBar(context, 'Error: $e');
       }
     } finally {
