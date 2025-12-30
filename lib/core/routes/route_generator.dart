@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
+import 'package:vedasip_delivery_app/screens/cash_collection_screen/cash_collection_screen.dart';
 import 'package:vedasip_delivery_app/screens/deliveries_list_screen/deliveries_list_screen.dart';
 import 'package:vedasip_delivery_app/screens/login_screen/view/login_screen.dart';
 import 'package:vedasip_delivery_app/screens/delivery_details_screen/delivery_details_screen.dart';
@@ -114,6 +115,11 @@ GoRouter buildRouter() {
         path: '/verification',
         name: AppRoutes.verificationscreen,
         builder: (context, state) => const VerificationScreen(),
+      ),
+        GoRoute(
+        path: '/cashCollections',
+        name: 'cashCollectionScreen',
+        builder: (context, state) => const CashCollectionScreen(),
       ),
     ],
   );
