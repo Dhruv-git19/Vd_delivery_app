@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
@@ -127,6 +128,22 @@ class _QrPaymentMethod extends StatefulWidget {
 class _QrPaymentMethodState extends State<_QrPaymentMethod> {
   bool _isLoading = false;
   String? _error;
+  Razorpay? _razorpay;
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay = Razorpay();
+    _razorpay!.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay!.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay!.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay?.clear();
+    super.dispose();
+  }
 
   Future<void> _handlePaymentReceived() async {
     setState(() {
@@ -142,7 +159,34 @@ class _QrPaymentMethodState extends State<_QrPaymentMethod> {
           : 'ONLINE';
       final serverMode = normalizePaymentMethod(serverRaw);
 
-      if (serverMode == 'ONLINE') {
+      // Always call API to get latest payment details
+      final paymentToSend = 'ONLINE';
+      final resp = await dio.completeDeliveryPayment(
+        context,
+        orderId: widget.orderId?.toString() ?? '',
+        paymentMethod: paymentToSend,
+      );
+
+      final dataResponse = resp.data['dataResponse'];
+      final returnCode = dataResponse != null
+          ? dataResponse['returnCode']
+          : null;
+      final description = dataResponse != null
+          ? dataResponse['description']
+          : null;
+      final paymentData = resp.data['data'] as Map<String, dynamic>?;
+      final paymentMode = paymentData?['paymentMethod']?.toString() ?? '';
+
+      if (returnCode == 0 &&
+          paymentMode.toUpperCase() == 'ONLINE' &&
+          paymentData != null &&
+          paymentData['razorpayOrderId'] != null) {
+        // Open Razorpay checkout
+        _isLoading = true;
+        setState(() {});
+        _openRazorpay(paymentData);
+      } else if (returnCode == 0) {
+        // Payment succeeded without Razorpay
         try {
           final homeProvider = Provider.of<HomeProvider>(
             context,
@@ -152,39 +196,12 @@ class _QrPaymentMethodState extends State<_QrPaymentMethod> {
         } catch (_) {}
         if (mounted) context.go(AppRoutes.homeScreen);
       } else {
-        // Server expects POD/CASH: for QR flow assume online payment via QR, so send ONLINE
-        final paymentToSend = 'ONLINE';
-        final resp = await dio.completeDeliveryPayment(
-          context,
-          orderId: widget.orderId?.toString() ?? '',
-          paymentMethod: paymentToSend,
-        );
-
-        final dataResponse = resp.data['dataResponse'];
-        final returnCode = dataResponse != null
-            ? dataResponse['returnCode']
-            : null;
-        final description = dataResponse != null
-            ? dataResponse['description']
-            : null;
-        if (returnCode == 0) {
-          try {
-            final homeProvider = Provider.of<HomeProvider>(
-              context,
-              listen: false,
-            );
-            await homeProvider.fetchData(context);
-          } catch (_) {}
-          if (mounted) context.go(AppRoutes.homeScreen);
-        } else {
-          final msg = description ?? 'Payment failed';
-          setState(() {
-            _error = msg;
-          });
-          MySnackBar.showSnackBar(context, msg);
-        }
+        final msg = description ?? 'Payment failed';
+        setState(() {
+          _error = msg;
+        });
+        MySnackBar.showSnackBar(context, msg);
       }
-      // (handled above inside branches) no duplicate processing here
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -194,6 +211,68 @@ class _QrPaymentMethodState extends State<_QrPaymentMethod> {
         _isLoading = false;
       });
     }
+  }
+
+  void _openRazorpay(Map<String, dynamic> paymentData) {
+    final key =
+        paymentData['keyId']?.toString() ?? paymentData['key']?.toString();
+    double amountDouble = 0;
+    try {
+      amountDouble = paymentData['amount'] is String
+          ? double.tryParse(paymentData['amount'].toString()) ?? 0
+          : (paymentData['amount'] is num
+                ? (paymentData['amount'] as num).toDouble()
+                : 0);
+    } catch (_) {}
+
+    final options = {
+      'key': key,
+      'amount': (amountDouble * 100).toInt(),
+      'name': 'Delivery Payment',
+      'description': paymentData['description'] ?? 'Order Payment',
+      'order_id': paymentData['razorpayOrderId'] ?? paymentData['orderId'],
+      'currency': paymentData['currency'] ?? 'INR',
+      'prefill': paymentData['prefill'] ?? {},
+    };
+
+    try {
+      _razorpay?.open(options);
+    } catch (e) {
+      MySnackBar.showSnackBar(
+        context,
+        'Payment gateway error. Please try again.',
+      );
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    setState(() {
+      _isLoading = false;
+    });
+    MySnackBar.showSnackBar(context, 'Payment successful!');
+    try {
+      final homeProvider = Provider.of<HomeProvider>(context, listen: false);
+      await homeProvider.fetchData(context);
+    } catch (_) {}
+    if (mounted) context.go(AppRoutes.homeScreen);
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    setState(() {
+      _isLoading = false;
+      _error = response.message ?? 'Payment failed. Please try again.';
+    });
+    MySnackBar.showSnackBar(context, _error ?? 'Payment failed.');
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    MySnackBar.showSnackBar(
+      context,
+      'External wallet selected: ${response.walletName}',
+    );
   }
 
   @override
@@ -468,7 +547,7 @@ class _OtherPaymentMethodState extends State<_OtherPaymentMethod> {
                 spacing: 8.w,
                 runSpacing: 8.h,
                 children: [
-                  for (final method in ['Cash', 'UPI', 'Card', 'Other'])
+                  for (final method in ['Cash', 'Other'])
                     GestureDetector(
                       onTap: () {
                         setState(() {

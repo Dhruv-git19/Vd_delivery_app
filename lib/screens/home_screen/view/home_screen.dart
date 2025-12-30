@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:vedasip_delivery_app/core/theme/theme.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
-import 'package:vedasip_delivery_app/screens/my_deliveries_map_screen/widgets/map_image_container.dart';
-import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
+import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/provider/homeProvider.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/widgets/drawerMenuItemWidget.dart';
 import 'package:vedasip_delivery_app/screens/home_screen/widgets/home_screen_shimmer.dart';
+import 'package:vedasip_delivery_app/screens/my_deliveries_map_screen/widgets/map_image_container.dart';
+import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
 import 'package:vedasip_delivery_app/theme/color_pallete.dart';
 import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 
@@ -258,6 +258,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   text: 'Live Map',
                   onTap: () {
                     context.push(AppRoutes.routeNavigationScreen);
+                  },
+                ),
+                DrawerMenuItem(
+                  icon: Icons.currency_rupee_outlined,
+                  text: 'Cash Collections',
+                  onTap: () {
+                    context.push(AppRoutes.cashCollectionScreen);
                   },
                 ),
 

@@ -53,7 +53,7 @@ class CommonDeliveryContainer extends StatelessWidget {
               ),
 
               const Spacer(),
-              _coloredContainer(
+              coloredContainer(
                 'Delivered',
                 AllColors.primaryColor,
                 const Color(0xFFE8FFF9),
@@ -72,11 +72,11 @@ class CommonDeliveryContainer extends StatelessWidget {
           SizedBox(height: 10.h),
           Row(
             children: [
-              _iconText(Icons.access_time_outlined, time),
+              iconText(Icons.access_time_outlined, time),
               SizedBox(width: 20.w),
-              _iconText(Icons.location_on_outlined, distance),
+              iconText(Icons.location_on_outlined, distance),
               SizedBox(width: 20.w),
-              _iconText(Icons.currency_rupee, price),
+              iconText(Icons.currency_rupee, price),
             ],
           ),
           SizedBox(height: 10.h),
@@ -110,7 +110,7 @@ class CommonDeliveryContainer extends StatelessWidget {
     );
   }
 
-  Widget _iconText(IconData icon, String text) {
+  Widget iconText(IconData icon, String text) {
     return Row(
       children: [
         Icon(icon, size: 17.r, color: const Color.fromARGB(255, 102, 102, 102)),
@@ -127,7 +127,7 @@ class CommonDeliveryContainer extends StatelessWidget {
     );
   }
 
-  Widget _coloredContainer(String text, Color textcolor, Color contColor) {
+  Widget coloredContainer(String text, Color textcolor, Color contColor) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(

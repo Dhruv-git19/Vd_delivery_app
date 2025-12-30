@@ -380,4 +380,40 @@ class DioHttp {
       wrapData: true,
     );
   }
+
+  Future<Response> getCashCollections(
+    BuildContext context, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final data = {"page": page, "limit": limit};
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.getCashCollections,
+      data: data,
+      wrapData: true,
+    );
+  }
+
+  Future<Response> getAdminUsers(BuildContext context) async {
+    final data = {};
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.getAdminUsers,
+      data: data,
+      wrapData: true,
+    );
+  }
+
+  Future<Response> addCashHandover(
+    BuildContext context, {
+    required Map<String, dynamic> payload,
+  }) async {
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.addCashHandover,
+      data: payload,
+      wrapData: false, // already wrapped in payload
+    );
+  }
 }
