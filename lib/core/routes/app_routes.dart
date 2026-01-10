@@ -10,4 +10,5 @@ class AppRoutes {
   static const String myDeliveryScreen = '/myDeliveries';
   static const String paymentCollectionScreen = '/paymentCollection';
   static const String verificationscreen = '/verification';
+  static const String cashCollectionScreen = '/cashCollections';
 }

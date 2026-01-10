@@ -156,8 +156,10 @@ class DioHttp {
     final data = {
       "orderId": orderId,
       "type": type,
-      "currentLat": currentLat,
-      "currentLng": currentLng,
+      // "currentLat": currentLat,
+      // "currentLng": currentLng, //24.578961, 73.689943
+      "currentLat": "24.578961",
+      "currentLng": "73.689943",
     };
 
     return _postRequest(
@@ -309,7 +311,7 @@ class DioHttp {
       "vehicleRegistrationUrl": vehicleRegistrationUrl,
       "drivingLicenseUrl": drivingLicenseUrl,
       "idPhotoUrl": idPhotoUrl,
-      "areadIds": areaIds,
+      "areaIds": areaIds,
     };
 
     return _postRequest(
@@ -332,8 +334,10 @@ class DioHttp {
     final data = {
       "orderId": orderId,
       "type": type,
-      "currentLat": currentLat,
-      "currentLng": currentLng,
+      // "currentLat": currentLat,
+      // "currentLng": currentLng,
+      "currentLat": "24.578961",
+      "currentLng": "73.689943",
       "uploadedFileUrls": uploadedFileUrls,
     };
 
@@ -346,6 +350,70 @@ class DioHttp {
       endpoint: ApiEndpoint.submitOrderProof,
       data: data,
       wrapData: true,
+    );
+  }
+
+  Future<Response> checkOrderPaymentMode(
+    BuildContext context, {
+    required String orderId,
+    required String type,
+  }) async {
+    final data = {"orderId": orderId, "type": type};
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.checkOrderPaymentMode,
+      data: data,
+      wrapData: true,
+    );
+  }
+
+  Future<Response> completeDeliveryPayment(
+    BuildContext context, {
+    required String orderId,
+    required String paymentMethod,
+  }) async {
+    final data = {"orderId": orderId, "paymentMethod": paymentMethod};
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.completeDeliveryPayment,
+      data: data,
+      wrapData: true,
+    );
+  }
+
+  Future<Response> getCashCollections(
+    BuildContext context, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final data = {"page": page, "limit": limit};
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.getCashCollections,
+      data: data,
+      wrapData: true,
+    );
+  }
+
+  Future<Response> getAdminUsers(BuildContext context) async {
+    final data = {};
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.getAdminUsers,
+      data: data,
+      wrapData: true,
+    );
+  }
+
+  Future<Response> addCashHandover(
+    BuildContext context, {
+    required Map<String, dynamic> payload,
+  }) async {
+    return _postRequest(
+      context: context,
+      endpoint: ApiEndpoint.addCashHandover,
+      data: payload,
+      wrapData: false, // already wrapped in payload
     );
   }
 }

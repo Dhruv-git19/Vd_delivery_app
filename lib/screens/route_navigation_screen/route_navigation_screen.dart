@@ -196,16 +196,6 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
       );
     }
 
-    // Add warehouse marker
-    _markers.add(
-      Marker(
-        markerId: const MarkerId('warehouse'),
-        position: LatLng(warehouseLat, warehouseLng),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-        infoWindow: const InfoWindow(title: 'Warehouse'),
-      ),
-    );
-
     // Add next delivery marker - with null safety checks
     if (nextOrder != null &&
         nextOrder.address != null &&
