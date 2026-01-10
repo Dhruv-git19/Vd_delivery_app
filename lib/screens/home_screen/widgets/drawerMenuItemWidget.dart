@@ -6,18 +6,11 @@ class DrawerMenuItem extends StatelessWidget {
   final IconData icon;
   final String text;
   final VoidCallback onTap;
-  final Color? iconColor;
-  final Color? iconBackgroundColor;
-  final Color? textColor;
 
   const DrawerMenuItem({
-    super.key,
     required this.icon,
     required this.text,
     required this.onTap,
-    this.iconColor,
-    this.iconBackgroundColor,
-    this.textColor,
   });
 
   @override
@@ -32,30 +25,20 @@ class DrawerMenuItem extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(8.r),
               decoration: BoxDecoration(
-                color: iconBackgroundColor ?? AllColors.drawerIconBackColor,
+                color: AllColors.drawerIconBackColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: iconColor ?? primaryColor,
-                size: 22.r,
-              ),
+              child: Icon(icon, color: primaryColor, size: 22.r),
             ),
             SizedBox(width: 14.w),
-            Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w500,
-                  color: textColor ?? Colors.black87,
-                ),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 16.sp,
+
+                fontWeight: FontWeight.w400,
+                color: Colors.black87,
               ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16.r,
-              color: Colors.grey.shade400,
             ),
           ],
         ),

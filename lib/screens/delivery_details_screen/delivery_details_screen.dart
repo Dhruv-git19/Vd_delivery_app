@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/model/base_api_response.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/theme.dart';
 import '../../core/utils/common_widgets/common_appbar.dart';
 import '../../core/utils/common_widgets/common_button.dart';
+import '../../services/dio_http.dart';
 import '../../widget/snack_bar.dart';
 import 'provider/delivery_details_provider.dart';
 import 'widgets/detail_container.dart';
@@ -26,6 +28,7 @@ class DeliveryDetailsScreen extends StatefulWidget {
 
 class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   bool _isLaunchingMap = false;
+  bool _isCheckingArrival = false;
 
   @override
   void initState() {
@@ -78,15 +81,12 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
     if (cartDetails == null || cartDetails.isEmpty) {
       return [
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.h),
-          child: Center(
-            child: Text(
-              'No items found',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.grey.shade500,
-                fontStyle: FontStyle.italic,
-              ),
+          padding: EdgeInsets.only(top: 4.h),
+          child: Text(
+            'No items found',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: AllColors.deliverydetailshadelight,
             ),
           ),
         ),
@@ -97,33 +97,21 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
       final productName =
           item['productVariant']?['product']?['productName'] ?? 'Item';
       final qty = item['quantity']?.toString() ?? '0';
+      final price = item['price']?.toString() ?? '0';
+
       final productImages =
           item['productVariant']?['product']?['productImages'] as List?;
       final imageUrl = (productImages != null && productImages.isNotEmpty)
           ? productImages.first['imageUrl']
           : null;
 
-      return Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.all(8.r),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
+      return Padding(
+        padding: EdgeInsets.only(bottom: 10.h),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8.r),
-              child: S3NetworkImage(
-                imageUrl: imageUrl,
-                width: 56.w,
-                height: 56.h,
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(width: 12.w),
+            S3NetworkImage(imageUrl: imageUrl, width: 48.w, height: 48.h),
+            SizedBox(width: 10.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,31 +123,22 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   SizedBox(height: 4.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 2.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(6.r),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: Text(
-                      'Qty: $qty',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey.shade700,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  Text(
+                    'Quantity: $qty',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: AllColors.deliverydetailshadelight,
                     ),
                   ),
                 ],
               ),
+            ),
+            Text(
+              '₹$price',
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -240,17 +219,11 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: EdgeInsets.all(10.r),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: AllColors.deliverydetailBoundary),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,33 +233,32 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
               Text(
                 'Items to Deliver',
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: verifyheadingcolor,
                   fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               SizedBox(width: 8.w),
               Container(
                 padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 8.w),
                 decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12.r),
+                  color: const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Text(
                   '$itemCount',
                   style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
             ],
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 6.h),
-            child: Divider(height: 1, color: Colors.grey.shade100),
-          ),
+          SizedBox(height: 8.h),
+          const Divider(height: 1),
+
+          SizedBox(height: 8.h),
           ..._buildCartItems(details),
         ],
       ),
@@ -296,43 +268,24 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   Widget _buildInstructionsCard() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: EdgeInsets.all(10.r),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: AllColors.deliverydetailBoundary),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                size: 20.r,
-                color: Colors.orange,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Special Instructions',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          Text(
+            'Special Instructions',
+            style: TextStyle(
+              color: verifyheadingcolor,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 6.h),
-            child: Divider(height: 1, color: Colors.grey.shade100),
-          ),
+          SizedBox(height: 6.h),
           _instructionLine('Please handle fragile items with care.'),
           _instructionLine('Call customer upon arrival.'),
           _instructionLine('Collect empty bottles if available.'),
@@ -343,28 +296,24 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
 
   Widget _instructionLine(String text) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 4.h),
+      padding: EdgeInsets.only(top: 4.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            margin: EdgeInsets.only(top: 6.h),
-            width: 4.r,
-            height: 4.r,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade400,
-              shape: BoxShape.circle,
+          Text(
+            '• ',
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: AllColors.deliverydetailshadelight,
             ),
           ),
-          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.grey.shade700,
+                fontSize: 11.sp,
+                color: AllColors.deliverydetailshadelight,
                 fontWeight: FontWeight.w500,
-                height: 1.4,
               ),
             ),
           ),
@@ -380,7 +329,10 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
           child: CommonButton(
             buttonValue: 'At Destination',
             isfullWidth: true,
-            onTap: () => _checkArrivalAndNavigate(context),
+            isLoading: _isCheckingArrival,
+            onTap: _isCheckingArrival
+                ? null
+                : () => _checkArrivalAndNavigate(context),
             textStyle: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -495,10 +447,73 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   }
 
   Future<void> _checkArrivalAndNavigate(BuildContext context) async {
-    context.push(
-      AppRoutes.confirmDeliveryScreen,
-      extra: {'id': widget.orderId, 'type': widget.type},
-    );
-    return;
+    setState(() {
+      _isCheckingArrival = true;
+    });
+
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        MySnackBar.showSnackBar(
+          context,
+          'Location permission denied. Please enable location to confirm arrival.',
+        );
+        return;
+      }
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      final originLat = position.latitude;
+      final originLng = position.longitude;
+
+      // Call backend to verify arrival
+      if (widget.orderId == null) {
+        MySnackBar.showSnackBar(context, 'Order id not available');
+        return;
+      }
+
+      final dio = DioHttp();
+      final resp = await dio.verifyDeliveryLocation(
+        context,
+        orderId: widget.orderId!.toString(),
+        type: widget.type ?? 'cart',
+        currentLat: originLat,
+        currentLng: originLng,
+      );
+
+      final apiResponse = BaseApiResponse<Map<String, dynamic>>.fromJson(
+        resp.data,
+        (data) => data as Map<String, dynamic>,
+      );
+
+      if (apiResponse.dataResponse.returnCode == 0) {
+        // Success — navigate to confirm delivery screen
+        context.push(
+          AppRoutes.confirmDeliveryScreen,
+          extra: {'id': widget.orderId, 'type': widget.type},
+        );
+      } else {
+        MySnackBar.showSnackBar(
+          context,
+          apiResponse.dataResponse.description.isNotEmpty
+              ? apiResponse.dataResponse.description
+              : 'Unable to verify arrival',
+        );
+      }
+    } catch (e) {
+      MySnackBar.showSnackBar(context, 'Error checking location: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCheckingArrival = false;
+        });
+      }
+    }
   }
 }

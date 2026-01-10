@@ -3,12 +3,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-
-import 'core/routes/route_generator.dart';
-import 'screens/delivery_details_screen/provider/delivery_details_provider.dart';
-import 'screens/home_screen/provider/homeProvider.dart';
-import 'screens/login_screen/provider/loginProvider.dart';
-import 'screens/my_deliveries_screen/provider/my_deliveries_provider.dart';
+import 'package:vedasip_delivery_app/core/routes/route_generator.dart';
+import 'package:vedasip_delivery_app/screens/deliveries_list_screen/provider/delivery_history_provider.dart';
+import 'package:vedasip_delivery_app/screens/delivery_details_screen/provider/delivery_details_provider.dart';
+import 'package:vedasip_delivery_app/screens/home_screen/provider/homeProvider.dart';
+import 'package:vedasip_delivery_app/screens/login_screen/provider/loginProvider.dart';
 
 final router = buildRouter();
 
@@ -30,7 +29,7 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => LoginProvider()),
           ChangeNotifierProvider(create: (_) => HomeProvider()),
           ChangeNotifierProvider(create: (_) => DeliveryDetailsProvider()),
-          ChangeNotifierProvider(create: (_) => MyDeliveriesProvider()),
+          ChangeNotifierProvider(create: (_) => DeliveryHistoryProvider()),
         ],
         child: MaterialApp.router(
           routerConfig: router,

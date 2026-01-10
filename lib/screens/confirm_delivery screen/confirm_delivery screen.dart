@@ -7,17 +7,17 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-
-import '../../core/routes/app_routes.dart';
-import '../../core/theme/theme.dart';
-import '../../core/utils/common_widgets/common_appbar.dart';
-import '../../core/utils/common_widgets/common_button.dart';
-import '../../core/utils/common_widgets/common_delivery_confirm_cont.dart';
-import '../../core/utils/common_widgets/common_dotted_box.dart';
-import '../../core/utils/common_widgets/common_textfield.dart';
-import '../../services/dio_http.dart';
-import '../../widget/snack_bar.dart';
-import '../delivery_details_screen/provider/delivery_details_provider.dart';
+import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
+import 'package:vedasip_delivery_app/core/theme/theme.dart';
+import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
+import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
+import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_confirm_cont.dart';
+import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dotted_box.dart';
+import 'package:vedasip_delivery_app/core/utils/common_widgets/common_icon_backg_cont.dart';
+import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
+import 'package:vedasip_delivery_app/screens/delivery_details_screen/provider/delivery_details_provider.dart';
+import 'package:vedasip_delivery_app/services/dio_http.dart';
+import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 
 class ConfirmDeliveryScreen extends StatefulWidget {
   final int? orderId;
@@ -131,6 +131,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
       return;
     }
 
+    // For subscription: validate bottle count and photos
     if (widget.type == 'subscription') {
       final bottleCount = _bottleController.text.trim();
       if (bottleCount.isNotEmpty) {
@@ -188,6 +189,8 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
         final bottleCountText = _bottleController.text.trim();
         if (bottleCountText.isNotEmpty && _bottleImages.isNotEmpty) {
           final bottleCount = int.tryParse(bottleCountText) ?? 0;
+
+          // Upload bottle images
           final bottleFilePaths = _bottleImages
               .map((xfile) => xfile.path)
               .toList();
@@ -212,6 +215,8 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
           if (bottleUploadedUrls.isEmpty) {
             throw Exception('No bottle image URLs returned from upload');
           }
+
+          // Submit bottle count
           final bottleCountResponse = await dioHttp
               .submitSubscriptionBottleCount(
                 context,
@@ -232,6 +237,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
         }
       }
 
+      // Step 3: Submit order proof
       final submitResponse = await dioHttp.submitOrderProof(
         context,
         orderId: widget.orderId.toString(),
@@ -243,6 +249,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
             ? _bottleController.text
             : null,
       );
+
       if (mounted) {
         final returnCode =
             submitResponse.data['dataResponse']?['returnCode'] ?? -1;
@@ -285,6 +292,10 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
 
   String _getTotalAmount(Map<String, dynamic>? details) {
     return details?['totalAmount']?.toString() ?? '0.00';
+  }
+
+  String _getOrderType(Map<String, dynamic>? details) {
+    return details?['type']?.toString() ?? '';
   }
 
   @override
@@ -333,7 +344,7 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                         _confirmationContainer(),
                         SizedBox(height: 16.h),
                         if (widget.type == 'subscription') ...[
-                          _emptyBottleContainer(),
+                          _EmptyBottleContainer(),
                           SizedBox(height: 20.h),
                         ],
                       ],
@@ -348,107 +359,84 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
   Widget _confirmationContainer() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.camera_alt_rounded,
-                size: 20.r,
-                color: AllColors.primaryColor,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Proof of Delivery',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          Text(
+            'Proof of Delivery',
+            style: TextStyle(
+              fontSize: 15.sp,
+              color: AllColors.verifyheadingcolor,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           SizedBox(height: 4.h),
           Text(
             'Capture a clear photo of the delivered items or door/gate as proof.',
-            style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 11.sp, color: Colors.grey[700]),
           ),
-          SizedBox(height: 10.h),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: AllColors.primaryColor.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: AllColors.primaryColor.withValues(alpha: 0.1),
+          SizedBox(height: 12.h),
+
+          /// Icon + short label
+          Row(
+            children: [
+              CommonIconBackgCont(
+                icon: Icon(Icons.security, color: AllColors.primaryColor),
+                backgroundColor: const Color.fromARGB(255, 230, 255, 248),
               ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.verified_user_rounded,
-                  color: AllColors.primaryColor,
-                  size: 20.r,
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  'Photos help us verify successful delivery and avoid disputes.',
+                  style: TextStyle(fontSize: 11.sp, color: Colors.grey[800]),
                 ),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: Text(
-                    'Photos help us verify successful delivery and avoid disputes.',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: AllColors.primaryColor.withValues(alpha: 0.8),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
 
-          SizedBox(height: 16.h),
+          SizedBox(height: 14.h),
           CommonDottedBox(
-            paddding: EdgeInsets.all(12.r),
+            paddding: EdgeInsets.all(10.r),
             width: double.infinity,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (_images.isNotEmpty) ...[
                   SizedBox(
-                    height: 100.h,
+                    height: 90.h,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _images.length,
-                      separatorBuilder: (_, __) => SizedBox(width: 12.w),
+                      separatorBuilder: (_, __) => SizedBox(width: 8.w),
                       itemBuilder: (context, i) {
                         final xfile = _images[i];
                         return Stack(
                           clipBehavior: Clip.none,
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(12.r),
+                              borderRadius: BorderRadius.circular(8.r),
                               child: Image.file(
                                 File(xfile.path),
-                                width: 140.w,
-                                height: 100.h,
+                                width: 120.w,
+                                height: 80.h,
                                 fit: BoxFit.cover,
                               ),
                             ),
                             Positioned(
-                              top: -8,
-                              right: -8,
+                              top: -6,
+                              right: -6,
                               child: GestureDetector(
                                 onTap: () {
                                   setState(() => _images.removeAt(i));
@@ -456,21 +444,13 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        blurRadius: 4,
-                                      ),
-                                    ],
+                                    color: Colors.black.withOpacity(0.6),
                                   ),
                                   padding: EdgeInsets.all(4.r),
                                   child: Icon(
                                     Icons.close,
                                     size: 16.r,
-                                    color: Colors.red,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -480,39 +460,39 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                       },
                     ),
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 10.h),
                 ] else ...[
                   Center(
                     child: Column(
                       children: [
                         Icon(
-                          Icons.add_a_photo_rounded,
+                          Icons.camera_alt_outlined,
                           size: 32.sp,
-                          color: Colors.grey.shade400,
+                          color: Colors.grey,
                         ),
                         SizedBox(height: 8.h),
                         Text(
                           'No photo captured yet',
                           style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 12.sp,
+                            color: Colors.grey[600],
                           ),
                         ),
                         SizedBox(height: 4.h),
                         Text(
                           'Add at least one photo as delivery proof.',
                           style: TextStyle(
-                            fontSize: 12.sp,
-                            color: Colors.grey.shade500,
+                            fontSize: 11.sp,
+                            color: Colors.grey[500],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 12.h),
                 ],
 
+                /// Action buttons
                 Row(
                   children: [
                     Expanded(
@@ -521,22 +501,22 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                         isfullWidth: true,
                         onTap: _takePhoto,
                         textStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                           fontSize: 12.sp,
                           color: Colors.white,
                         ),
                       ),
                     ),
-                    SizedBox(width: 12.w),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: CommonButton(
-                        buttonValue: 'Gallery',
+                        buttonValue: 'From Gallery',
                         isfullWidth: true,
                         onTap: _pickFromGallery,
                         backgroundColor: Colors.white,
                         outlineColor: AllColors.primaryColor,
                         textStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                           fontSize: 12.sp,
                           color: AllColors.primaryColor,
                         ),
@@ -552,57 +532,54 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
     );
   }
 
-  Widget _emptyBottleContainer() {
+  Widget _EmptyBottleContainer() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      padding: EdgeInsets.all(10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// Title row
           Row(
             children: [
-              Icon(Icons.recycling_rounded, size: 20.r, color: Colors.green),
-              SizedBox(width: 8.w),
               Text(
                 'Empty Bottles Collected',
                 style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[900],
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 6.h),
           Text(
             'Enter how many empty bottles you collected from the customer (if any).',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 12.sp),
+            style: TextStyle(color: Colors.grey[700], fontSize: 11.sp),
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 12.h),
           Text(
             'Number of empty bottles',
             style: TextStyle(
-              color: Colors.black87,
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
+              color: Colors.grey[850],
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
             ),
           ),
           SizedBox(height: 8.h),
           CommonTextfield(
             textEditingController: _bottleController,
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 8.h,
+              horizontal: 10.w,
+            ),
             hintText: 'Enter count (e.g. 2)',
-            fillColor: Colors.grey.shade50,
-            borderColor: Colors.grey.shade200,
+            fillColor: Colors.white,
+            borderColor: Colors.grey.shade300,
             radius: 12.r,
             keyboardType: TextInputType.number,
             onChanged: (value) {
@@ -610,46 +587,46 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
             },
           ),
           if (_bottleController.text.trim().isNotEmpty) ...[
-            SizedBox(height: 20.h),
+            SizedBox(height: 16.h),
             Text(
               'Bottle Collection Proof',
               style: TextStyle(
-                color: Colors.black87,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
+                color: Colors.grey[850],
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w500,
               ),
             ),
             SizedBox(height: 8.h),
             CommonDottedBox(
-              paddding: EdgeInsets.all(12.r),
+              paddding: EdgeInsets.all(10.r),
               width: double.infinity,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (_bottleImages.isNotEmpty) ...[
                     SizedBox(
-                      height: 100.h,
+                      height: 90.h,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: _bottleImages.length,
-                        separatorBuilder: (_, __) => SizedBox(width: 12.w),
+                        separatorBuilder: (_, __) => SizedBox(width: 8.w),
                         itemBuilder: (context, i) {
                           final xfile = _bottleImages[i];
                           return Stack(
                             clipBehavior: Clip.none,
                             children: [
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(12.r),
+                                borderRadius: BorderRadius.circular(8.r),
                                 child: Image.file(
                                   File(xfile.path),
-                                  width: 140.w,
-                                  height: 100.h,
+                                  width: 120.w,
+                                  height: 80.h,
                                   fit: BoxFit.cover,
                                 ),
                               ),
                               Positioned(
-                                top: -8,
-                                right: -8,
+                                top: -6,
+                                right: -6,
                                 child: GestureDetector(
                                   onTap: () {
                                     setState(() => _bottleImages.removeAt(i));
@@ -657,21 +634,13 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                                   child: Container(
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          blurRadius: 4,
-                                        ),
-                                      ],
+                                      color: Colors.black.withOpacity(0.6),
                                     ),
                                     padding: EdgeInsets.all(4.r),
                                     child: Icon(
                                       Icons.close,
                                       size: 16.r,
-                                      color: Colors.red,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
@@ -681,29 +650,28 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                         },
                       ),
                     ),
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 10.h),
                   ] else ...[
                     Center(
                       child: Column(
                         children: [
                           Icon(
-                            Icons.add_a_photo_rounded,
-                            size: 32.sp,
-                            color: Colors.grey.shade400,
+                            Icons.camera_alt_outlined,
+                            size: 28.sp,
+                            color: Colors.grey,
                           ),
-                          SizedBox(height: 8.h),
+                          SizedBox(height: 6.h),
                           Text(
                             'No bottle photos yet',
                             style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 11.sp,
+                              color: Colors.grey[600],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 10.h),
                   ],
                   Row(
                     children: [
@@ -713,13 +681,13 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                           isfullWidth: true,
                           onTap: _takeBottlePhoto,
                           textStyle: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11.sp,
                             color: Colors.white,
                           ),
                         ),
                       ),
-                      SizedBox(width: 12.w),
+                      SizedBox(width: 8.w),
                       Expanded(
                         child: CommonButton(
                           buttonValue: 'Gallery',
@@ -728,8 +696,8 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
                           backgroundColor: Colors.white,
                           outlineColor: AllColors.primaryColor,
                           textStyle: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11.sp,
                             color: AllColors.primaryColor,
                           ),
                         ),

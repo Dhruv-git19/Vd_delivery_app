@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../services/dio_http.dart';
-import '../model/delivery_history_model.dart';
+import 'package:vedasip_delivery_app/services/dio_http.dart';
+import 'package:vedasip_delivery_app/screens/deliveries_list_screen/model/delivery_history_model.dart';
 
-class MyDeliveriesProvider with ChangeNotifier {
+class DeliveryHistoryProvider with ChangeNotifier {
   final DioHttp _dioHttp = DioHttp();
 
   List<Delivery> deliveries = [];

@@ -9,6 +9,7 @@ class AppRoutes {
   static const String routeNavigationScreen = '/routeNavigation';
   static const String myDeliveryScreen = '/myDeliveries';
   static const String paymentCollectionScreen = '/paymentCollection';
+  static const String myDeliveriesMapScreen = '/deliveryMap';
   static const String verificationscreen = '/verification';
   static const String cashCollectionScreen = '/cashCollections';
 }
