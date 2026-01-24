@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
-import 'package:vedasip_delivery_app/core/theme/theme.dart';
-import 'package:vedasip_delivery_app/screens/home_screen/provider/homeProvider.dart';
-import 'package:vedasip_delivery_app/screens/home_screen/widgets/drawerMenuItemWidget.dart';
-import 'package:vedasip_delivery_app/screens/home_screen/widgets/home_screen_shimmer.dart';
-import 'package:vedasip_delivery_app/screens/my_deliveries_map_screen/widgets/map_image_container.dart';
-import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
-import 'package:vedasip_delivery_app/theme/color_pallete.dart';
-import 'package:vedasip_delivery_app/widget/snack_bar.dart';
+
+import '../../../core/routes/app_routes.dart';
+import '../../../core/theme/theme.dart';
+import '../../../storage/flutter_secure_storage.dart';
+import '../../../theme/color_pallete.dart';
+import '../../../widget/snack_bar.dart';
+import '../../my_deliveries_map_screen/widgets/map_image_container.dart';
+import '../provider/homeProvider.dart';
+import '../widgets/drawerMenuItemWidget.dart';
+import '../widgets/home_screen_shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -46,7 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ).user?.isKycVerified;
             if (kyc != null && kyc == 1) {
               MySnackBar.showSnackBar(context, 'KYC verified.');
-              // After provider updates, the build will show main content.
             } else {
               MySnackBar.showSnackBar(
                 context,
@@ -215,37 +215,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           "assets/images/profilePhoto.png",
                         ),
                       ),
-
-                      // Positioned(
-                      //   bottom: -2,
-                      //   right: -2,
-                      //   child: Container(
-                      //     padding: const EdgeInsets.all(6),
-                      //     decoration: BoxDecoration(
-                      //       color: Colors.white,
-                      //       shape: BoxShape.circle,
-                      //       boxShadow: [
-                      //         BoxShadow(color: Colors.black12, blurRadius: 4),
-                      //       ],
-                      //     ),
-                      //     child: Icon(
-                      //       Icons.edit,
-                      //       size: 18.r,
-                      //       color: primaryColor,
-                      //     ),
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 25),
-
-                // DrawerMenuItem(
-                //   icon: Icons.person_outline,
-                //   text: 'Profile',
-                //   onTap: () {},
-                // ),
                 DrawerMenuItem(
                   icon: Icons.inventory_2_outlined,
                   text: 'My Delivery',
@@ -417,7 +390,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
 
                     if (confirmed == true) {
-                      // account deleted successfully
                       await MySecureStorage().deleteToken();
                       MySnackBar.showSnackBar(
                         context,
@@ -658,8 +630,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.black.withOpacity(
-                                                  0.1,
+                                                color: Colors.black.withValues(
+                                                  alpha: 0.1,
                                                 ),
                                                 blurRadius: 8,
                                                 offset: const Offset(0, 2),
@@ -719,10 +691,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     try {
                       if (provider.isLoading) {
                         return const SliverToBoxAdapter(
-                          child: Column(children: [
-
-                            ],
-                          ),
+                          child: Column(children: []),
                         );
                       }
 
@@ -741,8 +710,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       return SliverList(
                         delegate: SliverChildBuilderDelegate((context, index) {
-                          if (index >= ordersList.length)
+                          if (index >= ordersList.length) {
                             return const SizedBox.shrink();
+                          }
                           final order = ordersList[index];
                           return Container(
                             color: Colors.white,
@@ -762,7 +732,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(16.r),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.04),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.04,
+                                      ),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),

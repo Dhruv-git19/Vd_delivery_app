@@ -252,15 +252,21 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
       }
     }
 
-    _mapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(
-        LatLngBounds(
-          southwest: LatLng(minLat, minLng),
-          northeast: LatLng(maxLat, maxLng),
+    if (minLat == maxLat && minLng == maxLng) {
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLngZoom(LatLng(minLat, minLng), 14.0),
+      );
+    } else {
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: LatLng(minLat, minLng),
+            northeast: LatLng(maxLat, maxLng),
+          ),
+          100.0,
         ),
-        100.0,
-      ),
-    );
+      );
+    }
   }
 
   Future<void> _fetchRoutePolyline(LatLng origin, LatLng destination) async {

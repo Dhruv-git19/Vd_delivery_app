@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vedasip_delivery_app/constants/xd.dart';
+import 'package:vedasip_delivery_app/constants/s3_signurl.dart';
 
 class S3NetworkImage extends StatefulWidget {
   final String? imageUrl;
