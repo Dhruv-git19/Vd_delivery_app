@@ -10,6 +10,8 @@ class DetailContainer extends StatelessWidget {
   final String distance;
   final String duration;
   final String amount;
+  final VoidCallback? onCall;
+  final VoidCallback? onMessage;
 
   const DetailContainer({
     super.key,
@@ -19,6 +21,8 @@ class DetailContainer extends StatelessWidget {
     required this.distance,
     required this.duration,
     required this.amount,
+    this.onCall,
+    this.onMessage,
   });
 
   @override
@@ -80,11 +84,13 @@ class DetailContainer extends StatelessWidget {
               CommonIconBackgCont(
                 icon: Icon(Icons.call, color: primaryColor),
                 backgroundColor: const Color(0xFFF3F4F6),
+                onTap: onCall,
               ),
               SizedBox(width: 6.w),
               CommonIconBackgCont(
                 icon: Icon(Icons.message_outlined, color: primaryColor),
                 backgroundColor: const Color(0xFFF3F4F6),
+                onTap: onMessage,
               ),
             ],
           ),

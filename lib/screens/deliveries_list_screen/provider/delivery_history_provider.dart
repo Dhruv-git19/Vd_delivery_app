@@ -10,6 +10,19 @@ class DeliveryHistoryProvider with ChangeNotifier {
   String? error;
   Pagination? pagination;
   Summary? summary;
+  bool showNormalOrders = true;
+  bool showSubscriptionOrders = true;
+
+  String get orderTypeFilter {
+    if (showNormalOrders && showSubscriptionOrders) return 'All';
+    if (showNormalOrders) return 'Normal Order';
+    if (showSubscriptionOrders) return 'Subscription';
+    return 'All';
+  }
+
+  bool _isSubscription(Delivery delivery) {
+    return delivery.type.toLowerCase().contains('sub');
+  }
 
   Future<void> fetchDeliveryHistory(BuildContext context) async {
     isLoading = true;
@@ -45,15 +58,45 @@ class DeliveryHistoryProvider with ChangeNotifier {
 
   // Filter deliveries by search text
   List<Delivery> filterDeliveries(String searchText) {
-    if (searchText.isEmpty) return deliveries;
-
     final lowerSearch = searchText.toLowerCase();
+
     return deliveries.where((delivery) {
+      final isSub = _isSubscription(delivery);
+      final matchesType = isSub ? showSubscriptionOrders : showNormalOrders;
+      if (!matchesType) return false;
+
+      if (searchText.isEmpty) return true;
+
       return delivery.customerName.toLowerCase().contains(lowerSearch) ||
           delivery.customerMobile.contains(searchText) ||
           delivery.address?.fullAddress.toLowerCase().contains(lowerSearch) ==
               true ||
           delivery.orderId.toString().contains(searchText);
     }).toList();
+  }
+
+  void setShowNormalOrders(bool value) {
+    showNormalOrders = value;
+    notifyListeners();
+  }
+
+  void setShowSubscriptionOrders(bool value) {
+    showSubscriptionOrders = value;
+    notifyListeners();
+  }
+
+  void setOrderTypeFilter(String? value) {
+    final v = value ?? 'All';
+    if (v == 'Normal Order') {
+      showNormalOrders = true;
+      showSubscriptionOrders = false;
+    } else if (v == 'Subscription') {
+      showNormalOrders = false;
+      showSubscriptionOrders = true;
+    } else {
+      showNormalOrders = true;
+      showSubscriptionOrders = true;
+    }
+    notifyListeners();
   }
 }

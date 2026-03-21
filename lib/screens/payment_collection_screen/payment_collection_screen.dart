@@ -42,6 +42,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
           orderId: widget.orderId!,
           type: widget.type ?? 'cart',
         );
+        if (!mounted) return;
         setState(() {
           _isPaymentModeLoading = true;
           _paymentModeError = null;
@@ -52,6 +53,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
             orderId: widget.orderId.toString(),
             type: widget.type ?? 'cart',
           );
+          if (!mounted) return;
           if (resp.data is Map && resp.data.containsKey('data')) {
             setState(() {
               _paymentModeData = resp.data['data'];
@@ -62,10 +64,12 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
             });
           }
         } catch (e) {
+          if (!mounted) return;
           setState(() {
             _paymentModeError = e.toString();
           });
         } finally {
+          if (!mounted) return;
           setState(() {
             _isPaymentModeLoading = false;
           });

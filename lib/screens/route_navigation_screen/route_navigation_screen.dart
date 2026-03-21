@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
+import 'package:vedasip_delivery_app/screens/route_navigation_screen/model/route_orders_model.dart';
 import 'package:vedasip_delivery_app/screens/route_navigation_screen/provider/route_navigation_provider.dart';
 
 class RouteNavigationScreen extends StatefulWidget {
@@ -23,8 +24,15 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
   GoogleMapController? _mapController;
   Position? _currentPosition;
   bool _isLoadingLocation = true;
+  bool _isBuildingRoute = false;
+  String? _routeBuiltFor;
+  int? _routeDistanceMeters;
+  int? _routeDurationSeconds;
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
+  StreamSubscription<Position>? _positionSubscription;
+  final Set<int> _proximityNotifiedOrderIds = {};
+  bool _isShowingProximityDialog = false;
 
   late final double warehouseLat;
   late final double warehouseLng;
@@ -42,6 +50,77 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
       ).fetchTodaysOrders(context);
       _getCurrentLocation();
     });
+  }
+
+  @override
+  void dispose() {
+    _positionSubscription?.cancel();
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  void _startLocationTracking() {
+    _positionSubscription?.cancel();
+    _positionSubscription =
+        Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 10,
+          ),
+        ).listen((position) {
+          if (!mounted) return;
+          _currentPosition = position;
+          final provider = Provider.of<RouteNavigationProvider>(
+            context,
+            listen: false,
+          );
+          _maybeNotifyProximity(provider);
+          _updateMap();
+        }, onError: (_) {});
+  }
+
+  Future<void> _maybeNotifyProximity(RouteNavigationProvider provider) async {
+    if (!mounted) return;
+    if (_isShowingProximityDialog) return;
+    if (_currentPosition == null) return;
+
+    final nextOrder = provider.nextOrder;
+    if (nextOrder == null || !nextOrder.hasValidAddress) return;
+    if (_proximityNotifiedOrderIds.contains(nextOrder.id)) return;
+
+    final destLat = nextOrder.address!.latitude!;
+    final destLng = nextOrder.address!.longitude!;
+    final distMeters = Geolocator.distanceBetween(
+      _currentPosition!.latitude,
+      _currentPosition!.longitude,
+      destLat,
+      destLng,
+    );
+
+    if (distMeters > 50) return;
+
+    _proximityNotifiedOrderIds.add(nextOrder.id);
+    _isShowingProximityDialog = true;
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Reached delivery location'),
+          content: Text(
+            'You are within 50 meters of stop ${provider.currentOrderIndex + 1}.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+    if (!mounted) return;
+    _isShowingProximityDialog = false;
   }
 
   Future<void> _getCurrentLocation() async {
@@ -142,6 +221,13 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
         _isLoadingLocation = false;
       });
 
+      if (!mounted) return;
+      final provider = Provider.of<RouteNavigationProvider>(
+        context,
+        listen: false,
+      );
+      _maybeNotifyProximity(provider);
+      _startLocationTracking();
       _updateMap();
     } catch (e) {
       setState(() {
@@ -176,10 +262,9 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
       context,
       listen: false,
     );
-    final nextOrder = provider.nextOrder;
+    final orders = provider.orders;
 
     _markers.clear();
-    _polylines.clear();
 
     // Add current location marker
     if (_currentPosition != null) {
@@ -196,37 +281,31 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
       );
     }
 
-    // Add next delivery marker - with null safety checks
-    if (nextOrder != null &&
-        nextOrder.address != null &&
-        nextOrder.address!.latitude != null &&
-        nextOrder.address!.longitude != null) {
+    for (int i = 0; i < orders.length; i++) {
+      final order = orders[i];
+      if (!order.hasValidAddress) continue;
+      final isCurrent = i == provider.currentOrderIndex;
+      final isCompleted = i < provider.currentOrderIndex;
+      final hue = isCurrent
+          ? BitmapDescriptor.hueRed
+          : isCompleted
+          ? BitmapDescriptor.hueAzure
+          : BitmapDescriptor.hueGreen;
       _markers.add(
         Marker(
-          markerId: MarkerId('delivery_${nextOrder.id}'),
-          position: LatLng(
-            nextOrder.address!.latitude!,
-            nextOrder.address!.longitude!,
-          ),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          markerId: MarkerId('delivery_${order.id}'),
+          position: LatLng(order.address!.latitude!, order.address!.longitude!),
+          icon: BitmapDescriptor.defaultMarkerWithHue(hue),
           infoWindow: InfoWindow(
-            title: nextOrder.userDetails?.fullName ?? 'Delivery',
-            snippet: nextOrder.address!.fullAddress,
+            title:
+                'Stop ${i + 1}: ${order.userDetails?.fullName ?? 'Delivery'}',
+            snippet: order.address!.fullAddress,
           ),
         ),
       );
-
-      // Draw polyline from current location to next delivery
-      if (_currentPosition != null) {
-        _fetchRoutePolyline(
-          LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-          LatLng(nextOrder.address!.latitude!, nextOrder.address!.longitude!),
-        );
-      }
-
-      // Move camera to show all markers
-      _fitMarkersInView();
     }
+
+    _fitMarkersInView();
 
     if (mounted) {
       setState(() {});
@@ -269,63 +348,366 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
     }
   }
 
-  Future<void> _fetchRoutePolyline(LatLng origin, LatLng destination) async {
+  Future<void> _maybeBuildRoute(RouteNavigationProvider provider) async {
+    if (_isBuildingRoute) return;
+    if (_currentPosition == null) return;
+    if (provider.orders.isEmpty) return;
+
+    final orderIds = provider.orders.map((e) => e.id).join(',');
+    final routeKey = orderIds;
+    if (_routeBuiltFor == routeKey) return;
+
+    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
+    if (apiKey == null || apiKey.isEmpty) {
+      _routeBuiltFor = routeKey;
+      _routeDistanceMeters = null;
+      _routeDurationSeconds = null;
+      _buildStraightPolyline(provider);
+      return;
+    }
+
+    setState(() {
+      _isBuildingRoute = true;
+    });
+
     try {
-      final String? apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
-      if (apiKey == null || apiKey.isEmpty) {
-        _addStraightLinePolyline(origin, destination);
-        return;
-      }
+      final origin = LatLng(
+        _currentPosition!.latitude,
+        _currentPosition!.longitude,
+      );
+      final stops = provider.orders
+          .where((o) => o.hasValidAddress)
+          .map((o) => LatLng(o.address!.latitude!, o.address!.longitude!))
+          .toList();
 
-      PolylinePoints polylinePoints = PolylinePoints();
-
-      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-        apiKey,
-        PointLatLng(origin.latitude, origin.longitude),
-        PointLatLng(destination.latitude, destination.longitude),
-        travelMode: TravelMode.driving,
+      final result = await _buildOptimizedRoute(
+        apiKey: apiKey,
+        origin: origin,
+        stops: stops,
       );
 
-      if (result.points.isNotEmpty) {
-        List<LatLng> polylineCoordinates = result.points
-            .map((point) => LatLng(point.latitude, point.longitude))
-            .toList();
-
-        setState(() {
-          _polylines.add(
-            Polyline(
-              polylineId: const PolylineId('route'),
-              points: polylineCoordinates,
-              color: primaryColor,
-              width: 4,
-            ),
-          );
-        });
-      } else {
-        _addStraightLinePolyline(origin, destination);
+      if (result.orderedStopIndices.isNotEmpty &&
+          result.orderedStopIndices.length == provider.orders.length) {
+        final optimizedOrders = [
+          for (final idx in result.orderedStopIndices) provider.orders[idx],
+        ];
+        provider.setOptimizedOrder(optimizedOrders);
       }
-    } catch (e) {
-      _addStraightLinePolyline(origin, destination);
+
+      final newOrderIds = provider.orders.map((e) => e.id).join(',');
+      _routeBuiltFor = newOrderIds;
+      _routeDistanceMeters = result.distanceMeters;
+      _routeDurationSeconds = result.durationSeconds;
+
+      _polylines
+        ..clear()
+        ..add(
+          Polyline(
+            polylineId: const PolylineId('route_all'),
+            points: result.polylinePoints,
+            color: primaryColor,
+            width: 4,
+          ),
+        );
+    } catch (_) {
+      _routeBuiltFor = routeKey;
+      _routeDistanceMeters = null;
+      _routeDurationSeconds = null;
+      _buildStraightPolyline(provider);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBuildingRoute = false;
+        });
+      }
+      _updateMap();
     }
   }
 
-  void _addStraightLinePolyline(LatLng origin, LatLng destination) {
-    setState(() {
-      _polylines.add(
+  void _buildStraightPolyline(RouteNavigationProvider provider) {
+    if (_currentPosition == null) return;
+    final points = <LatLng>[
+      LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+      ...provider.orders
+          .where((o) => o.hasValidAddress)
+          .map((o) => LatLng(o.address!.latitude!, o.address!.longitude!)),
+    ];
+    _polylines
+      ..clear()
+      ..add(
         Polyline(
-          polylineId: const PolylineId('route'),
-          points: [origin, destination],
+          polylineId: const PolylineId('route_all'),
+          points: points,
           color: primaryColor,
           width: 4,
         ),
       );
-    });
   }
 
-  @override
-  void dispose() {
-    _mapController?.dispose();
-    super.dispose();
+  Future<_OptimizedRouteResult> _buildOptimizedRoute({
+    required String apiKey,
+    required LatLng origin,
+    required List<LatLng> stops,
+  }) async {
+    if (stops.isEmpty) {
+      return _OptimizedRouteResult(
+        orderedStopIndices: const [],
+        polylinePoints: [origin],
+        distanceMeters: 0,
+        durationSeconds: 0,
+      );
+    }
+
+    const maxStopsPerSegment = 24;
+    final allPolyline = <LatLng>[origin];
+    final orderedIndices = <int>[];
+    int totalMeters = 0;
+    int totalSeconds = 0;
+
+    LatLng currentOrigin = origin;
+    int offset = 0;
+    while (offset < stops.length) {
+      final segmentStops = stops.skip(offset).take(maxStopsPerSegment).toList();
+      final segment = await _fetchOptimizedSegment(
+        apiKey: apiKey,
+        origin: currentOrigin,
+        stops: segmentStops,
+      );
+
+      totalMeters += segment.distanceMeters;
+      totalSeconds += segment.durationSeconds;
+
+      for (final p in segment.polylinePoints) {
+        if (allPolyline.isEmpty ||
+            allPolyline.last.latitude != p.latitude ||
+            allPolyline.last.longitude != p.longitude) {
+          allPolyline.add(p);
+        }
+      }
+
+      for (final idx in segment.orderedStopIndices) {
+        orderedIndices.add(offset + idx);
+      }
+
+      currentOrigin = segmentStops[segment.orderedStopIndices.last];
+      offset += segmentStops.length;
+    }
+
+    return _OptimizedRouteResult(
+      orderedStopIndices: orderedIndices,
+      polylinePoints: allPolyline,
+      distanceMeters: totalMeters,
+      durationSeconds: totalSeconds,
+    );
+  }
+
+  Future<_OptimizedRouteResult> _fetchOptimizedSegment({
+    required String apiKey,
+    required LatLng origin,
+    required List<LatLng> stops,
+  }) async {
+    if (stops.length == 1) {
+      final r = await _fetchDirections(
+        apiKey: apiKey,
+        origin: origin,
+        destination: stops.first,
+        waypoints: const [],
+        optimize: false,
+      );
+      return _OptimizedRouteResult(
+        orderedStopIndices: const [0],
+        polylinePoints: r.polylinePoints,
+        distanceMeters: r.distanceMeters,
+        durationSeconds: r.durationSeconds,
+      );
+    }
+
+    int destIndex = 0;
+    double maxDist = -1;
+    for (int i = 0; i < stops.length; i++) {
+      final d = Geolocator.distanceBetween(
+        origin.latitude,
+        origin.longitude,
+        stops[i].latitude,
+        stops[i].longitude,
+      );
+      if (d > maxDist) {
+        maxDist = d;
+        destIndex = i;
+      }
+    }
+
+    final destination = stops[destIndex];
+    final waypoints = <LatLng>[];
+    final waypointToStopIndex = <int>[];
+    for (int i = 0; i < stops.length; i++) {
+      if (i == destIndex) continue;
+      waypoints.add(stops[i]);
+      waypointToStopIndex.add(i);
+    }
+
+    final r = await _fetchDirections(
+      apiKey: apiKey,
+      origin: origin,
+      destination: destination,
+      waypoints: waypoints,
+      optimize: true,
+    );
+
+    final segmentOrder = <int>[];
+    if (r.waypointOrder.isNotEmpty &&
+        r.waypointOrder.length == waypointToStopIndex.length) {
+      for (final wIdx in r.waypointOrder) {
+        if (wIdx >= 0 && wIdx < waypointToStopIndex.length) {
+          segmentOrder.add(waypointToStopIndex[wIdx]);
+        }
+      }
+    } else {
+      segmentOrder.addAll(waypointToStopIndex);
+    }
+    segmentOrder.add(destIndex);
+
+    return _OptimizedRouteResult(
+      orderedStopIndices: segmentOrder,
+      polylinePoints: r.polylinePoints,
+      distanceMeters: r.distanceMeters,
+      durationSeconds: r.durationSeconds,
+    );
+  }
+
+  Future<_DirectionsResult> _fetchDirections({
+    required String apiKey,
+    required LatLng origin,
+    required LatLng destination,
+    required List<LatLng> waypoints,
+    required bool optimize,
+  }) async {
+    final dio = Dio();
+    final waypointParam = waypoints.isEmpty
+        ? null
+        : [
+            if (optimize) 'optimize:true',
+            ...waypoints.map((p) => '${p.latitude},${p.longitude}'),
+          ].join('|');
+
+    final resp = await dio.get(
+      'https://maps.googleapis.com/maps/api/directions/json',
+      queryParameters: {
+        'origin': '${origin.latitude},${origin.longitude}',
+        'destination': '${destination.latitude},${destination.longitude}',
+        if (waypointParam != null) 'waypoints': waypointParam,
+        'mode': 'driving',
+        'key': apiKey,
+      },
+    );
+
+    final data = resp.data;
+    if (data is! Map) {
+      throw StateError('Invalid directions response');
+    }
+
+    final routes = data['routes'];
+    if (routes is! List || routes.isEmpty) {
+      throw StateError('No routes returned');
+    }
+
+    final first = routes.first;
+    if (first is! Map) {
+      throw StateError('Invalid route shape');
+    }
+
+    final overview = first['overview_polyline'];
+    final encoded = overview is Map ? overview['points']?.toString() ?? '' : '';
+    final points = encoded.isNotEmpty ? _decodePolyline(encoded) : <LatLng>[];
+
+    final legs = first['legs'];
+    int meters = 0;
+    int seconds = 0;
+    if (legs is List) {
+      for (final leg in legs) {
+        if (leg is! Map) continue;
+        final dist = leg['distance'];
+        final dur = leg['duration'];
+        final distVal = dist is Map
+            ? int.tryParse(dist['value']?.toString() ?? '')
+            : null;
+        final durVal = dur is Map
+            ? int.tryParse(dur['value']?.toString() ?? '')
+            : null;
+        if (distVal != null) meters += distVal;
+        if (durVal != null) seconds += durVal;
+      }
+    }
+
+    final wo = first['waypoint_order'];
+    final waypointOrder = <int>[];
+    if (wo is List) {
+      for (final item in wo) {
+        final parsed = int.tryParse(item?.toString() ?? '');
+        if (parsed != null) waypointOrder.add(parsed);
+      }
+    }
+
+    return _DirectionsResult(
+      polylinePoints: points.isEmpty ? [origin, destination] : points,
+      waypointOrder: waypointOrder,
+      distanceMeters: meters,
+      durationSeconds: seconds,
+    );
+  }
+
+  List<LatLng> _decodePolyline(String encoded) {
+    final poly = <LatLng>[];
+    int index = 0;
+    int lat = 0;
+    int lng = 0;
+
+    while (index < encoded.length) {
+      int b;
+      int shift = 0;
+      int result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      final dlat = (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      final dlng = (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+      lng += dlng;
+
+      poly.add(LatLng(lat / 1e5, lng / 1e5));
+    }
+    return poly;
+  }
+
+  String _formatTotalDistance() {
+    final meters = _routeDistanceMeters;
+    if (meters == null) return 'N/A';
+    if (meters >= 1000) {
+      final km = meters / 1000;
+      return '${km.toStringAsFixed(km >= 10 ? 0 : 1)} km';
+    }
+    return '$meters m';
+  }
+
+  String _formatTotalDuration() {
+    final seconds = _routeDurationSeconds;
+    if (seconds == null) return 'N/A';
+    final minutes = (seconds / 60).round();
+    if (minutes < 60) return '$minutes min';
+    final hours = minutes ~/ 60;
+    final rem = minutes % 60;
+    if (rem == 0) return '${hours}h';
+    return '${hours}h ${rem}m';
   }
 
   @override
@@ -455,6 +837,10 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _maybeBuildRoute(provider);
+          });
+
           return Stack(
             children: [
               GoogleMap(
@@ -485,6 +871,17 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
                   right: 0,
                   child: _buildDeliveryCard(nextOrder, provider),
                 ),
+              if (_isBuildingRoute)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: LinearProgressIndicator(
+                    minHeight: 3.h,
+                    color: Colors.white,
+                    backgroundColor: primaryColor.withValues(alpha: 0.25),
+                  ),
+                ),
             ],
           );
         },
@@ -492,7 +889,10 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
     );
   }
 
-  Widget _buildDeliveryCard(nextOrder, RouteNavigationProvider provider) {
+  Widget _buildDeliveryCard(
+    RouteOrder nextOrder,
+    RouteNavigationProvider provider,
+  ) {
     return Container(
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
@@ -501,7 +901,7 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -516,7 +916,7 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
+                  color: primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
@@ -530,11 +930,25 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
               ),
               const Spacer(),
               Text(
-                '${nextOrder.type.toUpperCase()}',
+                nextOrder.type.toUpperCase(),
                 style: TextStyle(
                   fontSize: 11.sp,
                   color: Colors.grey[600],
                   fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            children: [
+              Icon(Icons.alt_route, size: 16.r, color: Colors.grey[600]),
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Text(
+                  '${provider.orders.length} stops • ${_formatTotalDistance()} • ${_formatTotalDuration()}',
+                  style: TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -592,6 +1006,35 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
           SizedBox(height: 16.h),
           Row(
             children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: provider.currentOrderIndex > 0
+                      ? () {
+                          provider.moveToPreviousOrder();
+                          _updateMap();
+                        }
+                      : null,
+                  icon: Icon(Icons.arrow_back, size: 18.r),
+                  label: Text(
+                    'Previous',
+                    style: TextStyle(fontSize: 13.sp),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: primaryColor,
+                    side: BorderSide(color: primaryColor),
+                    padding: EdgeInsets.symmetric(
+                      vertical: 12.h,
+                      horizontal: 8.w,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
@@ -654,4 +1097,32 @@ class _RouteNavigationScreenState extends State<RouteNavigationScreen> {
       ),
     );
   }
+}
+
+class _OptimizedRouteResult {
+  final List<int> orderedStopIndices;
+  final List<LatLng> polylinePoints;
+  final int distanceMeters;
+  final int durationSeconds;
+
+  const _OptimizedRouteResult({
+    required this.orderedStopIndices,
+    required this.polylinePoints,
+    required this.distanceMeters,
+    required this.durationSeconds,
+  });
+}
+
+class _DirectionsResult {
+  final List<LatLng> polylinePoints;
+  final List<int> waypointOrder;
+  final int distanceMeters;
+  final int durationSeconds;
+
+  const _DirectionsResult({
+    required this.polylinePoints,
+    required this.waypointOrder,
+    required this.distanceMeters,
+    required this.durationSeconds,
+  });
 }

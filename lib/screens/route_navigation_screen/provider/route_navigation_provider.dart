@@ -11,6 +11,7 @@ class RouteNavigationProvider with ChangeNotifier {
   int currentOrderIndex = 0;
   bool isLoading = true;
   String? error;
+  dynamic optimizedRoute;
 
   RouteOrder? get currentOrder {
     if (orders.isEmpty || currentOrderIndex >= orders.length) return null;
@@ -40,6 +41,7 @@ class RouteNavigationProvider with ChangeNotifier {
   Future<void> fetchTodaysOrders(BuildContext context) async {
     isLoading = true;
     error = null;
+    optimizedRoute = null;
     notifyListeners();
 
     try {
@@ -106,6 +108,11 @@ class RouteNavigationProvider with ChangeNotifier {
             debugPrint('✅ Orders with valid addresses: ${orders.length}');
           }
 
+          optimizedRoute = payload['optimizedRoute'];
+          if (optimizedRoute != null) {
+            orders = _applyOptimizedRoute(optimizedRoute, orders);
+          }
+
           currentOrderIndex = 0;
           error = null;
         } catch (parseError, stackTrace) {
@@ -150,5 +157,89 @@ class RouteNavigationProvider with ChangeNotifier {
   void resetRoute() {
     currentOrderIndex = 0;
     notifyListeners();
+  }
+
+  void setOptimizedOrder(List<RouteOrder> optimizedOrders) {
+    if (optimizedOrders.isEmpty) return;
+    orders = optimizedOrders.where((o) => o.hasValidAddress).toList();
+    currentOrderIndex = 0;
+    notifyListeners();
+  }
+
+  List<RouteOrder> _applyOptimizedRoute(
+    dynamic optimized,
+    List<RouteOrder> baseOrders,
+  ) {
+    if (baseOrders.isEmpty || optimized == null) return baseOrders;
+
+    List<int> ids = [];
+    List<int> waypointOrder = [];
+
+    if (optimized is List) {
+      for (final v in optimized) {
+        final parsed = int.tryParse(v?.toString() ?? '');
+        if (parsed != null) ids.add(parsed);
+      }
+    } else if (optimized is Map) {
+      final map = optimized.map((k, v) => MapEntry(k.toString(), v));
+      final candidates = [
+        'optimizedOrderIds',
+        'orderIds',
+        'order_ids',
+        'sequence',
+        'orderSequence',
+        'order_sequence',
+      ];
+      for (final key in candidates) {
+        final v = map[key];
+        if (v is List) {
+          for (final item in v) {
+            if (item is Map) {
+              final m = item.map((k, v) => MapEntry(k.toString(), v));
+              final parsed = int.tryParse(m['id']?.toString() ?? '');
+              if (parsed != null) ids.add(parsed);
+            } else {
+              final parsed = int.tryParse(item?.toString() ?? '');
+              if (parsed != null) ids.add(parsed);
+            }
+          }
+          if (ids.isNotEmpty) break;
+        }
+      }
+
+      final wo = map['waypointOrder'] ?? map['waypoint_order'];
+      if (wo is List) {
+        for (final item in wo) {
+          final parsed = int.tryParse(item?.toString() ?? '');
+          if (parsed != null) waypointOrder.add(parsed);
+        }
+      }
+    }
+
+    if (ids.isNotEmpty) {
+      final byId = {for (final o in baseOrders) o.id: o};
+      final ordered = <RouteOrder>[];
+      for (final id in ids) {
+        final o = byId[id];
+        if (o != null) ordered.add(o);
+      }
+      for (final o in baseOrders) {
+        if (!ordered.any((x) => x.id == o.id)) ordered.add(o);
+      }
+      return ordered;
+    }
+
+    if (waypointOrder.isNotEmpty && waypointOrder.length == baseOrders.length) {
+      final ordered = <RouteOrder>[];
+      for (final idx in waypointOrder) {
+        if (idx >= 0 && idx < baseOrders.length) ordered.add(baseOrders[idx]);
+      }
+      for (final o in baseOrders) {
+        if (!ordered.any((x) => x.id == o.id)) ordered.add(o);
+      }
+      return ordered;
+    }
+
+    return baseOrders;
   }
 }

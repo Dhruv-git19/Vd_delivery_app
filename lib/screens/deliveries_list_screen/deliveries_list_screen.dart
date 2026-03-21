@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_appbar.dart';
+import 'package:vedasip_delivery_app/core/utils/common_widgets/common_dropdownmenu.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_textfield.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_delivery_container.dart';
 import 'package:vedasip_delivery_app/screens/deliveries_list_screen/provider/delivery_history_provider.dart';
@@ -58,6 +59,20 @@ class _DeliveriesListScreenState extends State<DeliveriesListScreen> {
               },
             ),
 
+            SizedBox(height: 12.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Consumer<DeliveryHistoryProvider>(
+                builder: (_, provider, __) {
+                  return CommonDropdownmenu(
+                    title: 'Filter',
+                    items: const ['All', 'Normal Order', 'Subscription'],
+                    value: provider.orderTypeFilter,
+                    onChanged: provider.setOrderTypeFilter,
+                  );
+                },
+              ),
+            ),
             SizedBox(height: 12.h),
 
             Expanded(

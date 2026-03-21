@@ -30,6 +30,19 @@ class _S3NetworkImageState extends State<S3NetworkImage> {
     _loadImage();
   }
 
+  @override
+  void didUpdateWidget(covariant S3NetworkImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrl != widget.imageUrl) {
+      setState(() {
+        signedUrl = null;
+        isLoading = true;
+        hasError = false;
+      });
+      _loadImage();
+    }
+  }
+
   Future<void> _loadImage() async {
     if (widget.imageUrl == null || widget.imageUrl!.isEmpty) {
       setState(() {

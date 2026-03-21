@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:vedasip_delivery_app/core/routes/app_routes.dart';
 import 'package:vedasip_delivery_app/core/theme/theme.dart';
 import 'package:vedasip_delivery_app/core/utils/common_widgets/common_button.dart';
@@ -57,355 +56,24 @@ class CustomTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Payment method',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: AllColors.verifyheadingcolor,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Payment method',
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+            color: AllColors.verifyheadingcolor,
           ),
-          SizedBox(height: 8.h),
-          TabBar(
-            dividerColor: Colors.transparent,
-            indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: Colors.white,
-            unselectedLabelColor: AllColors.primaryColor,
-            labelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.sp),
-            unselectedLabelStyle: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 12.sp,
-            ),
-            indicator: BoxDecoration(
-              color: AllColors.primaryColor,
-              borderRadius: BorderRadius.circular(6.r),
-            ),
-            tabs: const [
-              Tab(text: 'Scan & pay (QR)'),
-              Tab(text: 'Cash / other'),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          SizedBox(
-            height: 320.h,
-            child: TabBarView(
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _QrPaymentMethod(
-                  paymentModeData: paymentModeData,
-                  orderId: orderId,
-                  orderType: orderType,
-                ),
-                _OtherPaymentMethod(
-                  paymentModeData: paymentModeData,
-                  orderId: orderId,
-                  orderType: orderType,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QrPaymentMethod extends StatefulWidget {
-  final Map<String, dynamic>? paymentModeData;
-  final int? orderId;
-  final String? orderType;
-  const _QrPaymentMethod({this.paymentModeData, this.orderId, this.orderType});
-
-  @override
-  State<_QrPaymentMethod> createState() => _QrPaymentMethodState();
-}
-
-class _QrPaymentMethodState extends State<_QrPaymentMethod> {
-  bool _isLoading = false;
-  String? _error;
-  Razorpay? _razorpay;
-
-  @override
-  void initState() {
-    super.initState();
-    _razorpay = Razorpay();
-    _razorpay!.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
-    _razorpay!.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
-    _razorpay!.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
-  }
-
-  @override
-  void dispose() {
-    _razorpay?.clear();
-    super.dispose();
-  }
-
-  Future<void> _handlePaymentReceived() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-    try {
-      final dio = DioHttp();
-      final serverRaw =
-          widget.paymentModeData != null &&
-              widget.paymentModeData!['paymentMode'] != null
-          ? widget.paymentModeData!['paymentMode']
-          : 'ONLINE';
-      final serverMode = normalizePaymentMethod(serverRaw);
-
-      // Always call API to get latest payment details
-      final paymentToSend = 'ONLINE';
-      final resp = await dio.completeDeliveryPayment(
-        context,
-        orderId: widget.orderId?.toString() ?? '',
-        paymentMethod: paymentToSend,
-      );
-
-      final dataResponse = resp.data['dataResponse'];
-      final returnCode = dataResponse != null
-          ? dataResponse['returnCode']
-          : null;
-      final description = dataResponse != null
-          ? dataResponse['description']
-          : null;
-      final paymentData = resp.data['data'] as Map<String, dynamic>?;
-      final paymentMode = paymentData?['paymentMethod']?.toString() ?? '';
-
-      if (returnCode == 0 &&
-          paymentMode.toUpperCase() == 'ONLINE' &&
-          paymentData != null &&
-          paymentData['razorpayOrderId'] != null) {
-        // Open Razorpay checkout
-        _isLoading = true;
-        setState(() {});
-        _openRazorpay(paymentData);
-      } else if (returnCode == 0) {
-        // Payment succeeded without Razorpay
-        try {
-          final homeProvider = Provider.of<HomeProvider>(
-            context,
-            listen: false,
-          );
-          await homeProvider.fetchData(context);
-        } catch (_) {}
-        if (mounted) context.go(AppRoutes.homeScreen);
-      } else {
-        final msg = description ?? 'Payment failed';
-        setState(() {
-          _error = msg;
-        });
-        MySnackBar.showSnackBar(context, msg);
-      }
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _openRazorpay(Map<String, dynamic> paymentData) {
-    final key =
-        paymentData['keyId']?.toString() ?? paymentData['key']?.toString();
-    double amountDouble = 0;
-    try {
-      amountDouble = paymentData['amount'] is String
-          ? double.tryParse(paymentData['amount'].toString()) ?? 0
-          : (paymentData['amount'] is num
-                ? (paymentData['amount'] as num).toDouble()
-                : 0);
-    } catch (_) {}
-
-    final options = {
-      'key': key,
-      'amount': (amountDouble * 100).toInt(),
-      'name': 'Delivery Payment',
-      'description': paymentData['description'] ?? 'Order Payment',
-      'order_id': paymentData['razorpayOrderId'] ?? paymentData['orderId'],
-      'currency': paymentData['currency'] ?? 'INR',
-      'prefill': paymentData['prefill'] ?? {},
-    };
-
-    try {
-      _razorpay?.open(options);
-    } catch (e) {
-      MySnackBar.showSnackBar(
-        context,
-        'Payment gateway error. Please try again.',
-      );
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    setState(() {
-      _isLoading = false;
-    });
-    MySnackBar.showSnackBar(context, 'Payment successful!');
-    try {
-      final homeProvider = Provider.of<HomeProvider>(context, listen: false);
-      await homeProvider.fetchData(context);
-    } catch (_) {}
-    if (mounted) context.go(AppRoutes.homeScreen);
-  }
-
-  void _handlePaymentError(PaymentFailureResponse response) {
-    setState(() {
-      _isLoading = false;
-      _error = response.message ?? 'Payment failed. Please try again.';
-    });
-    MySnackBar.showSnackBar(context, _error ?? 'Payment failed.');
-  }
-
-  void _handleExternalWallet(ExternalWalletResponse response) {
-    MySnackBar.showSnackBar(
-      context,
-      'External wallet selected: ${response.walletName}',
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(height: 8.h),
-          CommonIconBackgCont(
-            icon: Icon(Icons.qr_code_2, color: AllColors.primaryColor),
-            backgroundColor: AllColors.textfieldColor,
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'QR Code payment',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: AllColors.verifyheadingcolor,
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'Ask the customer to scan and pay using this QR code.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w400,
-              color: AllColors.deliverydetailshadelight,
-            ),
-          ),
-
-          SizedBox(height: 16.h),
-          CommonDottedBox(
-            paddding: EdgeInsets.all(12.r),
-            width: double.infinity,
-            child: Column(
-              children: [
-                SizedBox(height: 4.h),
-                Text(
-                  'Show this QR to customer',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                Container(
-                  padding: EdgeInsets.all(10.r),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.qr_code_2_rounded,
-                    color: Colors.black,
-                    size: 110.r,
-                  ),
-                ),
-                SizedBox(height: 10.h),
-                Text(
-                  'Customer will pay the full bill amount via UPI.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: AllColors.deliverydetailshadelight,
-                  ),
-                ),
-                SizedBox(height: 14.h),
-                // if (_error != null)
-                //   Padding(
-                //     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                //     child: Text(_error!, style: TextStyle(color: Colors.red)),
-                //   ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CommonButton(
-                        isfullWidth: true,
-                        buttonValue: 'Share QR',
-                        backgroundColor: Colors.white,
-                        outlineColor: AllColors.primaryColor,
-                        textStyle: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                          color: AllColors.primaryColor,
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          vertical: 8.h,
-                          horizontal: 4.w,
-                        ),
-                        onTap: () {
-                          // TODO: implement share if needed
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: CommonButton(
-                        isfullWidth: true,
-                        buttonValue: _isLoading
-                            ? 'Processing...'
-                            : 'Payment received',
-                        padding: EdgeInsets.symmetric(
-                          vertical: 8.h,
-                          horizontal: 4.w,
-                        ),
-                        textStyle: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                        onTap: _isLoading ? null : _handlePaymentReceived,
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 6.h),
-              ],
-            ),
-          ),
-        ],
-      ),
+        ),
+        SizedBox(height: 12.h),
+        _OtherPaymentMethod(
+          paymentModeData: paymentModeData,
+          orderId: orderId,
+          orderType: orderType,
+        ),
+      ],
     );
   }
 }
@@ -427,7 +95,13 @@ class _OtherPaymentMethod extends StatefulWidget {
 class _OtherPaymentMethodState extends State<_OtherPaymentMethod> {
   bool _isLoading = false;
   String? _error;
-  String _selectedMethod = 'Cash';
+  final TextEditingController _notesController = TextEditingController();
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
 
   Future<void> _handlePaymentReceived() async {
     setState(() {
@@ -454,7 +128,7 @@ class _OtherPaymentMethodState extends State<_OtherPaymentMethod> {
         } catch (_) {}
         if (mounted) context.go(AppRoutes.homeScreen);
       } else {
-        final paymentToSend = normalizePaymentMethod(_selectedMethod);
+        const paymentToSend = 'CASH';
         final resp = await dio.completeDeliveryPayment(
           context,
           orderId: widget.orderId?.toString() ?? '',
@@ -508,7 +182,7 @@ class _OtherPaymentMethodState extends State<_OtherPaymentMethod> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Cash / other method',
+          'Cash payment',
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
@@ -517,7 +191,7 @@ class _OtherPaymentMethodState extends State<_OtherPaymentMethod> {
         ),
         SizedBox(height: 4.h),
         Text(
-          'Use this when customer paid in cash, UPI, or card directly.',
+          'Use this when customer paid in cash.',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 11.sp,
@@ -547,18 +221,7 @@ class _OtherPaymentMethodState extends State<_OtherPaymentMethod> {
                 spacing: 8.w,
                 runSpacing: 8.h,
                 children: [
-                  for (final method in ['Cash', 'Other'])
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedMethod = method;
-                        });
-                      },
-                      child: _PaymentModeChip(
-                        label: method,
-                        selected: _selectedMethod == method,
-                      ),
-                    ),
+                  const _PaymentModeChip(label: 'Cash', selected: true),
                 ],
               ),
 
@@ -575,15 +238,29 @@ class _OtherPaymentMethodState extends State<_OtherPaymentMethod> {
               SizedBox(height: 6.h),
 
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF9FAFB),
                   borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: Text(
-                  'E.g. Cash received, last 4 digits of card, UPI ref no., etc.',
-                  style: TextStyle(fontSize: 11.sp, color: Colors.grey[500]),
+                child: TextField(
+                  controller: _notesController,
+                  minLines: 1,
+                  maxLines: 4,
+                  keyboardType: TextInputType.multiline,
+                  textInputAction: TextInputAction.newline,
+                  style: TextStyle(fontSize: 12.sp, color: Colors.black87),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    border: InputBorder.none,
+                    hintText:
+                        'E.g. Cash received, last 4 digits of card, UPI ref no., etc.',
+                    hintStyle: TextStyle(
+                      fontSize: 11.sp,
+                      color: Colors.grey[500],
+                    ),
+                  ),
                 ),
               ),
 

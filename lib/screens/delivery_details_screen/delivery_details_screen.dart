@@ -30,6 +30,40 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   bool _isLaunchingMap = false;
   bool _isCheckingArrival = false;
 
+  String? _formatStatusChipText(String? raw) {
+    final s = raw?.toString().trim();
+    if (s == null || s.isEmpty || s.toLowerCase() == 'null') return null;
+    final normalized = s.replaceAll('_', ' ').trim();
+    if (normalized.isEmpty) return null;
+    return normalized
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .map(
+          (p) => p.length == 1
+              ? p.toUpperCase()
+              : '${p[0].toUpperCase()}${p.substring(1).toLowerCase()}',
+        )
+        .join(' ');
+  }
+
+  String? _getStatusText(Map<String, dynamic>? details) {
+    final candidates = <dynamic>[
+      details?['paymentStatus'],
+      details?['payment_status'],
+      details?['status'],
+      details?['orderStatus'],
+      details?['order_status'],
+      details?['deliveryStatus'],
+      details?['delivery_status'],
+      details?['cart'] is Map ? (details?['cart'] as Map)['status'] : null,
+    ];
+    for (final c in candidates) {
+      final formatted = _formatStatusChipText(c?.toString());
+      if (formatted != null) return formatted;
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -55,8 +89,44 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
     return details?['type']?.toString() ?? '';
   }
 
+  int? _tryParseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+
+  String _formatDistanceFromMeters(int meters) {
+    if (meters >= 1000) {
+      final km = meters / 1000;
+      return '${km.toStringAsFixed(km >= 10 ? 0 : 1)} km';
+    }
+    return '$meters m';
+  }
+
+  String _formatDurationFromSeconds(int seconds) {
+    if (seconds < 60) return '${seconds}s';
+    final minutes = (seconds / 60).round();
+    if (minutes < 60) return '${minutes} min';
+    final hours = minutes ~/ 60;
+    final remMin = minutes % 60;
+    if (remMin == 0) return '${hours}h';
+    return '${hours}h ${remMin}m';
+  }
+
   String _getDistance(Map<String, dynamic>? details) {
-    return details?['distanceInfo']?['distance']?.toString() ?? 'N/A';
+    final raw = details?['distanceInfo']?['distance'];
+    final str = raw?.toString().trim();
+    if (str != null && str.isNotEmpty && str != 'null') return str;
+
+    final meters =
+        _tryParseInt(details?['distanceInfo']?['distanceValue']) ??
+        _tryParseInt(details?['distanceInfo']?['distance_value']) ??
+        _tryParseInt(details?['distanceValue']) ??
+        _tryParseInt(details?['distance_value']);
+    if (meters != null && meters > 0) return _formatDistanceFromMeters(meters);
+
+    return 'N/A';
   }
 
   String _getTotalAmount(Map<String, dynamic>? details) {
@@ -64,21 +134,258 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   }
 
   String _getDuration(Map<String, dynamic>? details) {
-    return details?['distanceInfo']?['duration']?.toString() ?? 'N/A';
+    final raw = details?['distanceInfo']?['duration'];
+    final str = raw?.toString().trim();
+    if (str != null && str.isNotEmpty && str != 'null') return str;
+
+    final seconds =
+        _tryParseInt(details?['distanceInfo']?['durationValue']) ??
+        _tryParseInt(details?['distanceInfo']?['duration_value']) ??
+        _tryParseInt(details?['durationValue']) ??
+        _tryParseInt(details?['duration_value']);
+    if (seconds != null && seconds > 0) {
+      return _formatDurationFromSeconds(seconds);
+    }
+
+    return 'N/A';
   }
 
   String _getCustomerAddress(Map<String, dynamic>? details) {
     return details?['address']?['fullAddress'] ?? '---';
   }
 
+  String? _getCustomerMobile(Map<String, dynamic>? details) {
+    final customer = details?['customer'];
+    final userDetails = details?['userDetails'];
+    final candidates = <dynamic>[
+      customer is Map ? customer['customerMobile'] : null,
+      customer is Map ? customer['mobile'] : null,
+      customer is Map ? customer['mobileNo'] : null,
+      customer is Map ? customer['mobileNumber'] : null,
+      customer is Map ? customer['phone'] : null,
+      customer is Map ? customer['phoneNo'] : null,
+      userDetails is Map ? userDetails['mobileNumber'] : null,
+      userDetails is Map ? userDetails['mobile_number'] : null,
+      details?['customerMobile'],
+      details?['mobile'],
+      details?['mobileNo'],
+      details?['mobileNumber'],
+      details?['phone'],
+      details?['phoneNo'],
+    ];
+
+    for (final c in candidates) {
+      final s = c?.toString().trim();
+      if (s != null && s.isNotEmpty && s != 'null') {
+        final normalized = _normalizePhoneNumber(s);
+        if (normalized != null && normalized.isNotEmpty) return normalized;
+      }
+    }
+    return null;
+  }
+
+  String? _normalizePhoneNumber(String input) {
+    var s = input.trim();
+    if (s.isEmpty) return null;
+    s = s.replaceAll(RegExp(r'[^\d+]'), '');
+    if (s.isEmpty) return null;
+    if (s.contains('+')) {
+      final hasLeadingPlus = s.startsWith('+');
+      s = s.replaceAll('+', '');
+      if (hasLeadingPlus) s = '+$s';
+    }
+    return s;
+  }
+
+  void _launchDialer(String? phone) async {
+    final p = phone?.trim();
+    if (p == null || p.isEmpty) {
+      if (mounted) {
+        MySnackBar.showSnackBar(
+          context,
+          'Customer mobile number not available',
+        );
+      }
+      return;
+    }
+    final uri = Uri(scheme: 'tel', path: p);
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && mounted) {
+      MySnackBar.showSnackBar(context, 'Unable to open phone app');
+    }
+  }
+
+  void _launchSms(String? phone) async {
+    final p = phone?.trim();
+    if (p == null || p.isEmpty) {
+      if (mounted) {
+        MySnackBar.showSnackBar(
+          context,
+          'Customer mobile number not available',
+        );
+      }
+      return;
+    }
+    final uri = Uri(scheme: 'sms', path: p);
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && mounted) {
+      MySnackBar.showSnackBar(context, 'Unable to open messaging app');
+    }
+  }
+
+  List<dynamic> _extractItemsList(Map<String, dynamic>? details) {
+    if (details == null) return const [];
+
+    dynamic readPath(List<String> keys) {
+      dynamic current = details;
+      for (final k in keys) {
+        if (current is Map && current.containsKey(k)) {
+          current = current[k];
+        } else {
+          return null;
+        }
+      }
+      return current;
+    }
+
+    final candidates = <dynamic>[
+      readPath(['cart', 'cartDetails']),
+      readPath(['cartDetails']),
+      readPath(['orderDetails', 'cart', 'cartDetails']),
+      readPath(['orderDetails', 'cartDetails']),
+      readPath(['subscription', 'cart', 'cartDetails']),
+      readPath(['subscription', 'cartDetails']),
+      readPath(['subscription', 'subscriptionDetails']),
+      readPath(['subscription', 'items']),
+      readPath(['subscriptionItems']),
+      readPath(['items']),
+      readPath(['orderItems']),
+      readPath(['products']),
+      readPath(['productDetails']),
+    ];
+
+    for (final c in candidates) {
+      if (c is List) return c;
+    }
+    return const [];
+  }
+
+  Map<String, dynamic> _asMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return value.map((k, v) => MapEntry(k.toString(), v));
+    return const {};
+  }
+
+  String _pickFirstNonEmptyString(Map<String, dynamic> map, List<String> keys) {
+    for (final k in keys) {
+      final v = map[k];
+      if (v == null) continue;
+      final s = v.toString().trim();
+      if (s.isNotEmpty && s.toLowerCase() != 'null') return s;
+    }
+    return '';
+  }
+
+  String? _extractImageUrlFromItem(Map<String, dynamic> item) {
+    String? firstFromList(dynamic value) {
+      if (value is List && value.isNotEmpty) {
+        final firstRaw = value.first;
+        if (firstRaw is String) {
+          final s = firstRaw.trim();
+          return s.isNotEmpty ? s : null;
+        }
+        final first = _asMap(firstRaw);
+        final u = _pickFirstNonEmptyString(first, [
+          'imageUrl',
+          'image_url',
+          'imageURL',
+          'url',
+          'image',
+          'path',
+          'key',
+          'location',
+          'src',
+        ]);
+        return u.isNotEmpty ? u : null;
+      }
+      return null;
+    }
+
+    final pv = _asMap(
+      item['productVariant'] ?? item['product_variant'] ?? item['variant'],
+    );
+    final p = _asMap(
+      pv['product'] ??
+          pv['productDetails'] ??
+          item['product'] ??
+          item['productDetails'] ??
+          item['product_details'],
+    );
+
+    final fromProductImages = firstFromList(p['productImages']);
+    if (fromProductImages != null) return fromProductImages;
+
+    final fromVariantImages = firstFromList(pv['productImages']);
+    if (fromVariantImages != null) return fromVariantImages;
+
+    final directProduct = _pickFirstNonEmptyString(p, [
+      'imageUrl',
+      'image_url',
+      'imageURL',
+      'image',
+      'thumbnail',
+      'thumbnailUrl',
+      'thumbnail_url',
+      'photo',
+      'photoUrl',
+      'photo_url',
+    ]);
+    if (directProduct.isNotEmpty) return directProduct;
+
+    final directItem = _pickFirstNonEmptyString(item, [
+      'imageUrl',
+      'image_url',
+      'imageURL',
+      'image',
+      'thumbnail',
+      'thumbnailUrl',
+      'thumbnail_url',
+      'photo',
+      'photoUrl',
+      'photo_url',
+      'productImage',
+      'product_image',
+    ]);
+    if (directItem.isNotEmpty) return directItem;
+
+    final fromItemImages = firstFromList(item['productImages']);
+    if (fromItemImages != null) return fromItemImages;
+
+    final fromImages = firstFromList(item['images']);
+    if (fromImages != null) return fromImages;
+
+    return null;
+  }
+
+  int _pickFirstInt(Map<String, dynamic> map, List<String> keys) {
+    for (final k in keys) {
+      final v = map[k];
+      if (v == null) continue;
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      final parsed = int.tryParse(v.toString());
+      if (parsed != null) return parsed;
+    }
+    return 0;
+  }
+
   int _getCartItemsCount(Map<String, dynamic>? details) {
-    final cartDetails = details?['cart']?['cartDetails'] as List?;
-    return cartDetails?.length ?? 0;
+    return _extractItemsList(details).length;
   }
 
   List<Widget> _buildCartItems(Map<String, dynamic>? details) {
-    final cartDetails = details?['cart']?['cartDetails'] as List?;
-    if (cartDetails == null || cartDetails.isEmpty) {
+    final items = _extractItemsList(details);
+    if (items.isEmpty) {
       return [
         Padding(
           padding: EdgeInsets.only(top: 4.h),
@@ -93,17 +400,52 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
       ];
     }
 
-    return cartDetails.map<Widget>((item) {
-      final productName =
-          item['productVariant']?['product']?['productName'] ?? 'Item';
-      final qty = item['quantity']?.toString() ?? '0';
-      final price = item['price']?.toString() ?? '0';
+    return items.map<Widget>((raw) {
+      final item = _asMap(raw);
+      final pv = _asMap(
+        item['productVariant'] ?? item['product_variant'] ?? item['variant'],
+      );
+      final p = _asMap(
+        pv['product'] ??
+            pv['productDetails'] ??
+            item['product'] ??
+            item['productDetails'] ??
+            item['product_details'],
+      );
 
-      final productImages =
-          item['productVariant']?['product']?['productImages'] as List?;
-      final imageUrl = (productImages != null && productImages.isNotEmpty)
-          ? productImages.first['imageUrl']
-          : null;
+      final productName =
+          _pickFirstNonEmptyString(p, ['productName', 'name', 'title']) //
+              .isNotEmpty
+          ? _pickFirstNonEmptyString(p, ['productName', 'name', 'title'])
+          : _pickFirstNonEmptyString(item, [
+              'productName',
+              'product_name',
+              'name',
+              'itemName',
+              'title',
+            ]).isNotEmpty
+          ? _pickFirstNonEmptyString(item, [
+              'productName',
+              'product_name',
+              'name',
+              'itemName',
+              'title',
+            ])
+          : 'Item';
+
+      final qtyInt = _pickFirstInt(item, ['quantity', 'qty', 'count']);
+      final qty = qtyInt == 0 ? '1' : qtyInt.toString();
+
+      final priceText = _pickFirstNonEmptyString(item, [
+        'price',
+        'unitPrice',
+        'totalPrice',
+        'amount',
+        'totalAmount',
+      ]);
+      final price = priceText.isNotEmpty ? priceText : '0';
+
+      final imageUrl = _extractImageUrlFromItem(item);
 
       return Padding(
         padding: EdgeInsets.only(bottom: 10.h),
@@ -149,11 +491,12 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<DeliveryDetailsProvider>(context);
+    final statusText = _getStatusText(provider.details) ?? 'Pending Payment';
 
     return Scaffold(
       appBar: CommonAppbar(
         title: 'Delivery Details',
-        text: 'Pending Payment',
+        text: statusText,
         code: '#DEL${widget.orderId ?? ''}',
       ),
       bottomNavigationBar: BottomAppBar(
@@ -177,6 +520,12 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
                         distance: _getDistance(provider.details),
                         duration: _getDuration(provider.details),
                         amount: _getTotalAmount(provider.details),
+                        onCall: () {
+                          _launchDialer(_getCustomerMobile(provider.details));
+                        },
+                        onMessage: () {
+                          _launchSms(_getCustomerMobile(provider.details));
+                        },
                       ),
                       SizedBox(height: 12.h),
                       _buildItemsCard(provider.details),
@@ -447,11 +796,23 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   }
 
   Future<void> _checkArrivalAndNavigate(BuildContext context) async {
-    setState(() {
-      _isCheckingArrival = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isCheckingArrival = true;
+      });
+    }
 
     try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        MySnackBar.showSnackBar(
+          context,
+          'Location is turned off. Please enable location services to confirm arrival.',
+        );
+        await Geolocator.openLocationSettings();
+        return;
+      }
+
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -465,6 +826,8 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
         );
         return;
       }
+
+      if (!mounted) return;
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
@@ -487,6 +850,7 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
         currentLng: originLng,
       );
 
+      if (!mounted) return;
       final apiResponse = BaseApiResponse<Map<String, dynamic>>.fromJson(
         resp.data,
         (data) => data as Map<String, dynamic>,
@@ -494,6 +858,7 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
 
       if (apiResponse.dataResponse.returnCode == 0) {
         // Success — navigate to confirm delivery screen
+        if (!mounted) return;
         context.push(
           AppRoutes.confirmDeliveryScreen,
           extra: {'id': widget.orderId, 'type': widget.type},

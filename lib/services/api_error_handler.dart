@@ -36,6 +36,12 @@ class ApiErrorHandler {
         case 429:
           MySnackBar.showSnackBar(context, 'Too Many Requests: $message');
           break;
+        case 413:
+          MySnackBar.showSnackBar(
+            context,
+            'Upload too large. Please select smaller images and try again.',
+          );
+          break;
         case 500:
           MySnackBar.showSnackBar(context, 'Server Error: $message');
           break;
@@ -84,7 +90,6 @@ class ApiErrorHandler {
       case DioExceptionType.connectionError:
         return 'Connection Error: Unable to connect to the server.';
       case DioExceptionType.unknown:
-      default:
         return 'Network Error: ${err.message ?? 'Unknown error'}';
     }
   }

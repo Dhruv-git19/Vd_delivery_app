@@ -41,7 +41,9 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
-        imageQuality: 80,
+        imageQuality: 60,
+        maxWidth: 1280,
+        maxHeight: 1280,
       );
       if (photo != null) {
         setState(() {
@@ -57,7 +59,11 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
 
   Future<void> _pickFromGallery() async {
     try {
-      final List<XFile> photos = await _picker.pickMultiImage(imageQuality: 80);
+      final List<XFile> photos = await _picker.pickMultiImage(
+        imageQuality: 60,
+        maxWidth: 1280,
+        maxHeight: 1280,
+      );
       if (photos.isNotEmpty) {
         setState(() {
           _images.addAll(photos);
@@ -74,7 +80,9 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
-        imageQuality: 80,
+        imageQuality: 60,
+        maxWidth: 1280,
+        maxHeight: 1280,
       );
       if (photo != null) {
         setState(() {
@@ -90,7 +98,11 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
 
   Future<void> _pickBottleFromGallery() async {
     try {
-      final List<XFile> photos = await _picker.pickMultiImage(imageQuality: 80);
+      final List<XFile> photos = await _picker.pickMultiImage(
+        imageQuality: 60,
+        maxWidth: 1280,
+        maxHeight: 1280,
+      );
       if (photos.isNotEmpty) {
         setState(() {
           _bottleImages.addAll(photos);
@@ -258,8 +270,23 @@ class _ConfirmDeliveryScreenState extends State<ConfirmDeliveryScreen> {
             'Unknown error';
 
         if (returnCode == 0) {
-          MySnackBar.showSnackBar(context, description);
-
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) {
+              return AlertDialog(
+                title: const Text('Order delivered'),
+                content: Text(description),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('Continue'),
+                  ),
+                ],
+              );
+            },
+          );
+          if (!mounted) return;
           context.push(
             AppRoutes.paymentCollectionScreen,
             extra: {'id': widget.orderId, 'type': widget.type},

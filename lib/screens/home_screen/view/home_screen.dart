@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/routes/app_routes.dart';
 import '../../../core/theme/theme.dart';
+import '../../../core/utils/common_widgets/common_dropdownmenu.dart';
 import '../../../storage/flutter_secure_storage.dart';
 import '../../../theme/color_pallete.dart';
 import '../../../widget/snack_bar.dart';
@@ -204,21 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () => Navigator.pop(context),
                 ),
                 SizedBox(height: 8.h),
-
-                Center(
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      CircleAvatar(
-                        radius: 45.r,
-                        backgroundImage: AssetImage(
-                          "assets/images/profilePhoto.png",
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 25),
+                SizedBox(height: 12.h),
                 DrawerMenuItem(
                   icon: Icons.inventory_2_outlined,
                   text: 'My Delivery',
@@ -238,6 +225,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   text: 'Cash Collections',
                   onTap: () {
                     context.push(AppRoutes.cashCollectionScreen);
+                  },
+                ),
+                DrawerMenuItem(
+                  icon: Icons.support_agent_outlined,
+                  text: 'Contact Support',
+                  onTap: () {
+                    context.push(AppRoutes.contactSupportScreen);
                   },
                 ),
 
@@ -685,6 +679,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
+                SliverToBoxAdapter(
+                  child: Container(
+                    color: Colors.white,
+                    padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
+                    child: Consumer<HomeProvider>(
+                      builder: (_, provider, __) {
+                        return CommonDropdownmenu(
+                          title: 'Filter',
+                          items: const ['All', 'Normal Order', 'Subscription'],
+                          value: provider.orderTypeFilter,
+                          onChanged: provider.setOrderTypeFilter,
+                        );
+                      },
+                    ),
+                  ),
+                ),
 
                 Consumer<HomeProvider>(
                   builder: (_, provider, _) {
@@ -695,7 +705,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
 
-                      final ordersList = provider.orders;
+                      final ordersList = provider.visibleOrders;
                       if (ordersList.isEmpty) {
                         return SliverToBoxAdapter(
                           child: Container(

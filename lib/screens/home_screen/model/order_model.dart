@@ -97,6 +97,30 @@ class Order {
       deliveryDates: json['deliveryDates'],
     );
   }
+
+  Order copyWith({DistanceInfo? distanceInfo}) {
+    return Order(
+      id: id,
+      userId: userId,
+      totalAmount: totalAmount,
+      status: status,
+      createdOn: createdOn,
+      cart: cart,
+      deliveryPartners: deliveryPartners,
+      type: type,
+      address: address,
+      distanceInfo: distanceInfo ?? this.distanceInfo,
+      customerName: customerName,
+      productIds: productIds,
+      subscriptionType: subscriptionType,
+      startDate: startDate,
+      endDate: endDate,
+      deliveryDays: deliveryDays,
+      deliveryDates: deliveryDates,
+      userDetails: userDetails,
+      deliveryPartnerDetails: deliveryPartnerDetails,
+    );
+  }
 }
 
 class Address {

@@ -9,7 +9,8 @@ plugins {
 val envFile = rootProject.file("../.env")
 
 val keystoreProperties = Properties()
-val keystorePropertiesFile = rootProject.file("key.properties")
+val flutterRootDir = rootProject.projectDir.parentFile
+val keystorePropertiesFile = rootProject.file("../key.properties")
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
@@ -53,8 +54,14 @@ android {
         create("release") {
             keyAlias = (keystoreProperties["keyAlias"] as String?) ?: ""
             keyPassword = (keystoreProperties["keyPassword"] as String?) ?: ""
-            storeFile = (keystoreProperties["storeFile"] as String?)
-                ?.let { file(it) }
+            val storeFilePath = (keystoreProperties["storeFile"] as String?)?.trim()
+            val resolvedStoreFile = when {
+                storeFilePath.isNullOrEmpty() -> flutterRootDir.resolve("veedasip-delivery-key.jks")
+                storeFilePath.startsWith("/") -> File(storeFilePath)
+                else -> flutterRootDir.resolve(storeFilePath)
+            }
+            val defaultStoreFile = flutterRootDir.resolve("veedasip-delivery-key.jks")
+            storeFile = if (resolvedStoreFile.exists()) resolvedStoreFile else defaultStoreFile
             storePassword = (keystoreProperties["storePassword"] as String?) ?: ""
         }
     }

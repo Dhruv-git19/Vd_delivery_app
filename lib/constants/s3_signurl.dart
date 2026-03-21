@@ -5,11 +5,41 @@ import 'package:s3_storage/s3_storage.dart';
 final Map<String, String> signedUrls = {};
 
 Future<String> generateSignedUrl(String rawS3Url) async {
-  if (rawS3Url.isEmpty) return "";
+  final raw = rawS3Url.trim();
+  if (raw.isEmpty) return "";
+  final cached = signedUrls[raw];
+  if (cached != null && cached.isNotEmpty) return cached;
 
   try {
-    final uri = Uri.parse(rawS3Url);
-    final objectKey = uri.path.substring(1);
+    final uri = Uri.tryParse(raw);
+    if (uri != null &&
+        uri.hasQuery &&
+        uri.queryParameters.keys.any((k) => k.startsWith('X-Amz-'))) {
+      signedUrls[raw] = raw;
+      return raw;
+    }
+
+    String objectKey;
+    if (uri == null || !uri.hasScheme) {
+      objectKey = raw;
+    } else if (uri.scheme == 's3') {
+      objectKey = uri.path;
+    } else if (uri.scheme == 'http' || uri.scheme == 'https') {
+      final host = uri.host.toLowerCase();
+      final isS3Host = host.contains('amazonaws.com') || host.contains('s3');
+      if (!isS3Host) {
+        signedUrls[raw] = raw;
+        return raw;
+      }
+      objectKey = uri.path;
+    } else {
+      objectKey = uri.path;
+    }
+
+    objectKey = objectKey.split('?').first;
+    while (objectKey.startsWith('/')) {
+      objectKey = objectKey.substring(1);
+    }
 
     if (objectKey.isEmpty) {
       throw Exception("Invalid S3 URL");
@@ -33,7 +63,7 @@ Future<String> generateSignedUrl(String rawS3Url) async {
       expires: 300,
     );
 
-    signedUrls[rawS3Url] = presignedUrl;
+    signedUrls[raw] = presignedUrl;
     return presignedUrl;
   } catch (e) {
     log("Error generating signed URL: $e");

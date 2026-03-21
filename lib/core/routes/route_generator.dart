@@ -17,6 +17,7 @@ import 'package:vedasip_delivery_app/screens/my_deliveries_map_screen/my_deliver
 import 'package:vedasip_delivery_app/screens/payment_collection_screen/payment_collection_screen.dart';
 import 'package:vedasip_delivery_app/screens/splash_screen/splash_screen.dart';
 import 'package:vedasip_delivery_app/screens/verification_screen.dart/verification_screen.dart';
+import 'package:vedasip_delivery_app/screens/contact_support_screen/contact_support_screen.dart';
 
 GoRouter buildRouter() {
   return GoRouter(
@@ -102,6 +103,11 @@ GoRouter buildRouter() {
         path: '/deliveryMap',
         name: AppRoutes.myDeliveriesMapScreen,
         builder: (context, state) => const MyDeliveriesMapScreen(),
+      ),
+      GoRoute(
+        path: '/contactSupport',
+        name: AppRoutes.contactSupportScreen,
+        builder: (context, state) => const ContactSupportScreen(),
       ),
       GoRoute(
         path: '/routeNavigation',

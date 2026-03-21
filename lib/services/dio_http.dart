@@ -11,6 +11,20 @@ import 'package:vedasip_delivery_app/services/api_error_handler.dart';
 import 'package:vedasip_delivery_app/storage/flutter_secure_storage.dart';
 import 'package:vedasip_delivery_app/widget/snack_bar.dart';
 
+String _normalizeBaseUrl(String value) {
+  return value.trim().replaceAll(RegExp(r'/+$'), '');
+}
+
+String _resolveBaseUrl() {
+  final dartDefine = const String.fromEnvironment('BASE_URL').trim();
+  if (dartDefine.isNotEmpty) return _normalizeBaseUrl(dartDefine);
+
+  final envValue = (dotenv.env['BASE_URL'] ?? '').trim();
+  if (envValue.isNotEmpty) return _normalizeBaseUrl(envValue);
+
+  throw StateError('BASE_URL is not configured');
+}
+
 class DioHttp {
   final Dio _dio;
   final String _baseUrl;
@@ -18,7 +32,7 @@ class DioHttp {
 
   DioHttp()
     : _dio = Dio()..interceptors.add(DioInterceptor()),
-      _baseUrl = dotenv.env['BASE_URL']!,
+      _baseUrl = _resolveBaseUrl(),
       _secureStorage = MySecureStorage();
 
   Future<Response> _postRequest({
@@ -43,11 +57,21 @@ class DioHttp {
     } on DioException catch (err) {
       if (err.response?.statusCode == 401 || err.response?.statusCode == 403) {
         await _secureStorage.deleteToken();
-        MySnackBar.showSnackBar(
-          context,
-          "Session expired. Please login again.",
-        );
-        context.go(AppRoutes.loginscreen);
+        try {
+          if (context.mounted) {
+            MySnackBar.showSnackBar(
+              context,
+              "Session expired. Please login again.",
+            );
+            context.go(AppRoutes.loginscreen);
+          } else {
+            MySnackBar.showGlobalSnackBar(
+              "Session expired. Please login again.",
+            );
+          }
+        } catch (_) {
+          MySnackBar.showGlobalSnackBar("Session expired. Please login again.");
+        }
       }
       ApiErrorHandler.handleDioError(context, err);
       rethrow;
@@ -156,10 +180,8 @@ class DioHttp {
     final data = {
       "orderId": orderId,
       "type": type,
-      // "currentLat": currentLat,
-      // "currentLng": currentLng, //24.578961, 73.689943
-      "currentLat": "24.578961",
-      "currentLng": "73.689943",
+      "currentLat": currentLat.toString(),
+      "currentLng": currentLng.toString(),
     };
 
     return _postRequest(
@@ -242,11 +264,21 @@ class DioHttp {
     } on DioException catch (err) {
       if (err.response?.statusCode == 401 || err.response?.statusCode == 403) {
         await _secureStorage.deleteToken();
-        MySnackBar.showSnackBar(
-          context,
-          "Session expired. Please login again.",
-        );
-        context.go(AppRoutes.loginscreen);
+        try {
+          if (context.mounted) {
+            MySnackBar.showSnackBar(
+              context,
+              "Session expired. Please login again.",
+            );
+            context.go(AppRoutes.loginscreen);
+          } else {
+            MySnackBar.showGlobalSnackBar(
+              "Session expired. Please login again.",
+            );
+          }
+        } catch (_) {
+          MySnackBar.showGlobalSnackBar("Session expired. Please login again.");
+        }
       }
       ApiErrorHandler.handleDioError(context, err);
       rethrow;
@@ -334,10 +366,8 @@ class DioHttp {
     final data = {
       "orderId": orderId,
       "type": type,
-      // "currentLat": currentLat,
-      // "currentLng": currentLng,
-      "currentLat": "24.578961",
-      "currentLng": "73.689943",
+      "currentLat": currentLat.toString(),
+      "currentLng": currentLng.toString(),
       "uploadedFileUrls": uploadedFileUrls,
     };
 
