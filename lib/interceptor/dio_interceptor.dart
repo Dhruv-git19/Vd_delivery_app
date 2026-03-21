@@ -11,12 +11,14 @@ class DioInterceptor extends Interceptor {
       'Content-Type': 'application/json',
     });
 
-    final token = await _secureStorage.readToken();
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
-    }
+    try {
+      final token = await _secureStorage.readToken();
+      if (token != null && token.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
+    } catch (_) {}
 
-    super.onRequest(options, handler);
+    handler.next(options);
   }
 
   @override

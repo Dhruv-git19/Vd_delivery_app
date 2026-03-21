@@ -21,8 +21,15 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkTokenAndRedirect() async {
-    final token = await MySecureStorage().readToken();
-    await Future.delayed(const Duration(milliseconds: 500));
+    String? token;
+    try {
+      token = await MySecureStorage()
+          .readToken()
+          .timeout(const Duration(seconds: 2));
+    } catch (_) {
+      token = null;
+    }
+    await Future.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
     if (token != null && token.isNotEmpty) {
       context.go(AppRoutes.homeScreen);

@@ -15,14 +15,19 @@ String _normalizeBaseUrl(String value) {
   return value.trim().replaceAll(RegExp(r'/+$'), '');
 }
 
-String _resolveBaseUrl() {
+String _resolveBaseUrlOrEmpty() {
   final dartDefine = const String.fromEnvironment('BASE_URL').trim();
   if (dartDefine.isNotEmpty) return _normalizeBaseUrl(dartDefine);
 
-  final envValue = (dotenv.env['BASE_URL'] ?? '').trim();
+  String envValue = '';
+  try {
+    envValue = (dotenv.env['BASE_URL'] ?? '').trim();
+  } catch (_) {
+    envValue = '';
+  }
   if (envValue.isNotEmpty) return _normalizeBaseUrl(envValue);
 
-  throw StateError('BASE_URL is not configured');
+  return '';
 }
 
 class DioHttp {
@@ -32,7 +37,7 @@ class DioHttp {
 
   DioHttp()
     : _dio = Dio()..interceptors.add(DioInterceptor()),
-      _baseUrl = _resolveBaseUrl(),
+      _baseUrl = _resolveBaseUrlOrEmpty(),
       _secureStorage = MySecureStorage();
 
   Future<Response> _postRequest({
@@ -43,7 +48,27 @@ class DioHttp {
     bool expectDataField = true,
     Function(String)? onSuccess,
   }) async {
-    final url = '$_baseUrl${endpoint.fullPath}';
+    final baseUrl = _baseUrl.isNotEmpty ? _baseUrl : _resolveBaseUrlOrEmpty();
+    if (baseUrl.isEmpty) {
+      try {
+        if (context.mounted) {
+          MySnackBar.showSnackBar(
+            context,
+            'App configuration error: BASE_URL is missing',
+          );
+        } else {
+          MySnackBar.showGlobalSnackBar(
+            'App configuration error: BASE_URL is missing',
+          );
+        }
+      } catch (_) {
+        MySnackBar.showGlobalSnackBar(
+          'App configuration error: BASE_URL is missing',
+        );
+      }
+      throw StateError('BASE_URL is not configured');
+    }
+    final url = '$baseUrl${endpoint.fullPath}';
     try {
       final response = await _dio.post(
         url,

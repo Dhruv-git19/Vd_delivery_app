@@ -13,7 +13,7 @@ final router = buildRouter();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
+  await dotenv.load(fileName: '.env', isOptional: true);
   runApp(const MyApp());
 }
 

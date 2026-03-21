@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/services.dart';
 
 class MySecureStorage {
   final FlutterSecureStorage _storage = FlutterSecureStorage();
@@ -21,7 +22,16 @@ class MySecureStorage {
   }
 
   Future<String?> readToken() async {
-    return await _storage.read(key: 'token');
+    try {
+      return await _storage.read(key: 'token');
+    } on PlatformException {
+      try {
+        await _storage.deleteAll();
+      } catch (_) {}
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> deleteEmailAndPassword() async {

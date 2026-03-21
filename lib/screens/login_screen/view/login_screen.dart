@@ -295,8 +295,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 bottom: 24.h,
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 18.w),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(
                         "Don't have an account? ",
