@@ -24,6 +24,13 @@ class _S3NetworkImageState extends State<S3NetworkImage> {
   bool isLoading = true;
   bool hasError = false;
 
+  String _directIfHttpUrl(String raw) {
+    final uri = Uri.tryParse(raw.trim());
+    if (uri == null) return '';
+    if (uri.scheme == 'http' || uri.scheme == 'https') return raw.trim();
+    return '';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -53,18 +60,23 @@ class _S3NetworkImageState extends State<S3NetworkImage> {
     }
 
     try {
-      final url = await generateSignedUrl(widget.imageUrl!);
+      final raw = widget.imageUrl!.trim();
+      final url = await generateSignedUrl(raw);
+      final resolved = url.isNotEmpty ? url : _directIfHttpUrl(raw);
       if (mounted) {
         setState(() {
-          signedUrl = url;
+          signedUrl = resolved;
           isLoading = false;
-          hasError = url.isEmpty;
+          hasError = resolved.isEmpty;
         });
       }
     } catch (e) {
       if (mounted) {
+        final raw = widget.imageUrl!.trim();
+        final resolved = _directIfHttpUrl(raw);
         setState(() {
-          hasError = true;
+          signedUrl = resolved.isNotEmpty ? resolved : null;
+          hasError = resolved.isEmpty;
           isLoading = false;
         });
       }

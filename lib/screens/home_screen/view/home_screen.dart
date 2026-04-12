@@ -724,6 +724,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             return const SizedBox.shrink();
                           }
                           final order = ordersList[index];
+                          final isSubscription =
+                              (order.subscriptionType?.isNotEmpty ?? false) ||
+                              order.type.toLowerCase().contains('sub');
                           return Container(
                             color: Colors.white,
                             padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -738,8 +741,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                 margin: EdgeInsets.only(bottom: 12.h),
                                 padding: EdgeInsets.all(16.r),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: isSubscription
+                                      ? const Color(0xFFFFFBEB)
+                                      : Colors.white,
                                   borderRadius: BorderRadius.circular(16.r),
+                                  border: isSubscription
+                                      ? Border.all(
+                                          color: const Color(0xFFF59E0B),
+                                          width: 1,
+                                        )
+                                      : null,
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withValues(
@@ -768,6 +779,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                           ),
                                         ),
+                                        if (isSubscription) ...[
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 10.w,
+                                              vertical: 4.h,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFFFE7C2),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: const Text(
+                                              'SUBSCRIPTION',
+                                              style: TextStyle(
+                                                color: Color(0xFF92400E),
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 8.w),
+                                        ],
                                         Container(
                                           padding: EdgeInsets.symmetric(
                                             horizontal: 12.w,

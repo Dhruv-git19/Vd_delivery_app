@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:vedasip_delivery_app/services/dio_http.dart';
 import 'package:vedasip_delivery_app/screens/delivery_history_detail_screen/model/specific_delivery_model.dart';
@@ -32,6 +33,19 @@ class SpecificDeliveryProvider with ChangeNotifier {
 
       if (payload is Map<String, dynamic>) {
         deliveryData = SpecificDeliveryResponse.fromJson(payload);
+        if (kDebugMode) {
+          final items = deliveryData?.orderDetails?.cart?.items ?? const [];
+          final withImages = items
+              .where((i) => i.productImages.isNotEmpty)
+              .length;
+          final firstImage =
+              items.isNotEmpty && items.first.productImages.isNotEmpty
+                  ? items.first.productImages.first.imageUrl
+                  : '';
+          debugPrint(
+            'SpecificDelivery: items=${items.length} withImages=$withImages firstImageUrl=$firstImage',
+          );
+        }
       } else {
         deliveryData = null;
         error = 'Invalid response format';

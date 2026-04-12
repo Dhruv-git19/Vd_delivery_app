@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
@@ -29,6 +31,8 @@ class DeliveryDetailsScreen extends StatefulWidget {
 class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   bool _isLaunchingMap = false;
   bool _isCheckingArrival = false;
+  StreamSubscription<Position>? _positionSubscription;
+  Position? _currentPosition;
 
   String? _formatStatusChipText(String? raw) {
     final s = raw?.toString().trim();
@@ -67,6 +71,7 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    _startLocationTracking();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.orderId != null) {
         Provider.of<DeliveryDetailsProvider>(
@@ -79,6 +84,53 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
         );
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _positionSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _startLocationTracking() async {
+    try {
+      final enabled = await Geolocator.isLocationServiceEnabled();
+      if (!enabled) return;
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+
+      final initial = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      if (mounted) {
+        setState(() {
+          _currentPosition = initial;
+        });
+      }
+
+      await _positionSubscription?.cancel();
+      _positionSubscription =
+          Geolocator.getPositionStream(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              distanceFilter: 5,
+            ),
+          ).listen((pos) {
+            if (!mounted) return;
+            setState(() {
+              _currentPosition = pos;
+            });
+          }, onError: (_) {});
+    } catch (_) {}
   }
 
   String _getCustomerName(Map<String, dynamic>? details) {
@@ -94,6 +146,14 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
     if (value is int) return value;
     if (value is num) return value.toInt();
     return int.tryParse(value.toString());
+  }
+
+  double? _tryParseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
   }
 
   String _formatDistanceFromMeters(int meters) {
@@ -115,6 +175,22 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   }
 
   String _getDistance(Map<String, dynamic>? details) {
+    final destLat =
+        _tryParseDouble(details?['address']?['latitude']) ??
+        _tryParseDouble(details?['address']?['lat']);
+    final destLng =
+        _tryParseDouble(details?['address']?['longitude']) ??
+        _tryParseDouble(details?['address']?['lng']);
+    if (_currentPosition != null && destLat != null && destLng != null) {
+      final meters = Geolocator.distanceBetween(
+        _currentPosition!.latitude,
+        _currentPosition!.longitude,
+        destLat,
+        destLng,
+      ).round();
+      if (meters >= 0) return _formatDistanceFromMeters(meters);
+    }
+
     final raw = details?['distanceInfo']?['distance'];
     final str = raw?.toString().trim();
     if (str != null && str.isNotEmpty && str != 'null') return str;
@@ -124,7 +200,7 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
         _tryParseInt(details?['distanceInfo']?['distance_value']) ??
         _tryParseInt(details?['distanceValue']) ??
         _tryParseInt(details?['distance_value']);
-    if (meters != null && meters > 0) return _formatDistanceFromMeters(meters);
+    if (meters != null && meters >= 0) return _formatDistanceFromMeters(meters);
 
     return 'N/A';
   }
